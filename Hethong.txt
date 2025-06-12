@@ -1,0 +1,935 @@
+### Bảng `khu_vuc` (mới)
+```sql
+CREATE TABLE khu_vuc (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    ma_khu_vuc VARCHAR(10) UNIQUE NOT NULL, -- A, B, C, D
+    ten_khu_vuc VARCHAR(100) NOT NULL,
+    mo_ta TEXT,
+    kich_thuoc_hang INT NOT NULL, -- số hàng
+    kich_thuoc_cot INT NOT NULL, -- số cột
+    tai_trong_max DECIMAL(10,2) DEFAULT 0, -- kg
+    nhiet_do_min DECIMAL(5,2) DEFAULT 0, -- °C
+    nhiet_do_max DECIMAL(5,2) DEFAULT 40, -- °C
+    do_am_min DECIMAL(5,2) DEFAULT 0, -- %
+    do_am_max DECIMAL(5,2) DEFAULT 100, -- %
+    trang_thai ENUM('Hoạt_động', 'Bảo_trì', 'Ngừng') DEFAULT 'Hoạt_động',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### Bảng `vi_tri_kho` (cập nhật)
+```sql
+CREATE TABLE vi_tri_kho (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    ma_vi_tri VARCHAR(10) UNIQUE NOT NULL, -- A1, A2, B1, B2...
+    khu_vuc_id INT NOT NULL,
+    hang CHAR(1) NOT NULL, -- A, B, C, D, E
+    cot INT NOT NULL, -- 1, 2, 3, 4, 5
+    loai_vi_tri ENUM('Pallet', 'Carton', 'Bulk') DEFAULT 'Pallet',
+    tai_trong_max DECIMAL(10,2) DEFAULT 0, -- kg
+    chieu_cao_max DECIMAL(8,2) DEFAULT 0, -- cm
+    trang_thai ENUM('Trống', 'Có_hàng', 'Bảo_trì', 'Hỏng') DEFAULT 'Trống',
+    pallet_id INT NULL,
+    uu_tien_fifo BOOLEAN DEFAULT TRUE,
+    gan_cua_ra BOOLEAN DEFAULT FALSE,
+    vi_tri_cach_ly BOOLEAN DEFAULT FALSE,
+    ghi_chu TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (khu_vuc_id) REFERENCES khu_vuc(id),
+    FOREIGN KEY (pallet_id) REFERENCES pallets(id),
+    UNIQUE KEY unique_hang_cot (hang, cot)
+);
+```
+
+### Bảng `nhom_hang` (mới)
+```sql
+CREATE TABLE nhom_hang (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    ma_nhom VARCHAR(20) UNIQUE NOT NULL,
+    ten_nhom VARCHAR(100) NOT NULL,
+    mo_ta TEXT,
+    icon VARCHAR(50), -- emoji hoặc icon class
+    mau_sac VARCHAR(7), -- hex color code
+    yeu_cau_nhiet_do_min DECIMAL(5,2),
+    yeu_cau_nhiet_do_max DECIMAL(5,2),
+    yeu_cau_do_am_min DECIMAL(5,2),
+    yeu_cau_do_am_max DECIMAL(5,2),
+    tranh_anh_sang BOOLEAN DEFAULT FALSE,
+    tranh_rung_dong BOOLEAN DEFAULT FALSE,
+    hang_de_vo BOOLEAN DEFAULT FALSE,
+    hang_nguy_hiem BOOLEAN DEFAULT FALSE,
+    thu_tu_hien_thi INT DEFAULT 0,
+    trang_thai ENUM('Hoạt_động', 'Ngừng') DEFAULT 'Hoạt_động',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Bảng `san_pham` (cập nhật)
+```sql
+CREATE TABLE san_pham (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    ma_san_pham VARCHAR(50) UNIQUE NOT NULL,
+    ten_san_pham VARCHAR(100) NOT NULL,
+    nhom_hang_id INT NOT NULL,
+    thuong_hieu VARCHAR(100),
+    dung_tich DECIMAL(10,2), -- ml hoặc g
+    don_vi_tinh VARCHAR(20) DEFAULT 'thùng',
+    so_luong_per_thung INT DEFAULT 1,
+    ma_vach VARCHAR(100),
+    nha_cung_cap VARCHAR(100),
+    han_su_dung_mac_dinh INT DEFAULT 365, -- ngày
+    nha_cung_cap VARCHAR(100),
+    han_su_dung_mac_dinh INT DEFAULT 365, -- ngày
+    chu_ky_kiem_tra_cl INT DEFAULT 30, -- ngày
+    hinh_anh VARCHAR(255),
+    mo_ta TEXT,
+    trang_thai ENUM('Hoạt_động', 'Ngừng') DEFAULT 'Hoạt_động',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (nhom_hang_id) REFERENCES nhom_hang(id)
+);
+```
+
+### Bảng `tinh_trang_hang` (mới)
+```sql
+CREATE TABLE tinh_trang_hang (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    pallet_id INT NOT NULL,
+    loai_tinh_trang ENUM('Bình_thường', 'Sắp_hết_hạn', 'Cần_kiểm_tra_CL', 'Có_vấn_đề', 'Ưu_tiên_xuất') NOT NULL,
+    muc_do ENUM('Thấp', 'Vừa', 'Cao', 'Khẩn_cấp') DEFAULT 'Vừa',
+    mo_ta TEXT,
+    ngay_phat_hien DATE NOT NULL,
+    ngay_xu_ly DATE NULL,
+    nguoi_phat_hien VARCHAR(50),
+    nguoi_xu_ly VARCHAR(50),
+    trang_thai ENUM('Mới', 'Đang_xử_lý', 'Hoàn_thành', 'Hủy') DEFAULT 'Mới',
+    ghi_chu TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (pallet_id) REFERENCES pallets(id),
+    INDEX idx_loai_tinh_trang (loai_tinh_trang),
+    INDEX idx_trang_thai (trang_thai)
+);
+```
+
+### Bảng `kiem_ke` (mới)
+```sql
+CREATE TABLE kiem_ke (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    ma_kiem_ke VARCHAR(20) UNIQUE NOT NULL,
+    ten_kiem_ke VARCHAR(100) NOT NULL,
+    loai_kiem_ke ENUM('Toàn_kho', 'Theo_khu_vuc', 'Theo_nhom_hang', 'Theo_han_su_dung') NOT NULL,
+    pham_vi_kiem_ke JSON, -- {khu_vuc: ["A", "B"], nhom_hang: [1,2,3], tu_ngay: "2025-01-01", den_ngay: "2025-12-31"}
+    ngay_kiem_ke DATE NOT NULL,
+    nguoi_tao VARCHAR(50) NOT NULL,
+    danh_sach_nguoi_kiem_ke JSON, -- ["user1", "user2", "user3"]
+    trang_thai ENUM('Chuẩn_bị', 'Đang_kiểm_kê', 'Hoàn_thành', 'Hủy') DEFAULT 'Chuẩn_bị',
+    ghi_chu TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### Bảng `chi_tiet_kiem_ke` (mới)
+```sql
+CREATE TABLE chi_tiet_kiem_ke (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    kiem_ke_id INT NOT NULL,
+    pallet_id INT NOT NULL,
+    so_luong_he_thong INT NOT NULL, -- số lượng theo hệ thống
+    so_luong_thuc_te INT, -- số lượng đếm thực tế
+    chenh_lech INT GENERATED ALWAYS AS (so_luong_thuc_te - so_luong_he_thong) STORED,
+    trang_thai_hang VARCHAR(100), -- tình trạng bao bì, chất lượng
+    nguoi_kiem_ke VARCHAR(50),
+    thoi_gian_kiem_ke TIMESTAMP,
+    ghi_chu TEXT,
+    hinh_anh JSON, -- ["image1.jpg", "image2.jpg"] nếu có vấn đề
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (kiem_ke_id) REFERENCES kiem_ke(id),
+    FOREIGN KEY (pallet_id) REFERENCES pallets(id)
+);
+```
+
+### Bảng `bao_tri` (mới)
+```sql
+CREATE TABLE bao_tri (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    ma_bao_tri VARCHAR(20) UNIQUE NOT NULL,
+    tieu_de VARCHAR(200) NOT NULL,
+    loai_bao_tri ENUM('Vệ_sinh', 'Sửa_chữa', 'Kiểm_tra', 'Thay_thế', 'Bảo_dưỡng') NOT NULL,
+    doi_tuong ENUM('Khu_vực', 'Vị_trí', 'Thiết_bị', 'Hệ_thống') NOT NULL,
+    doi_tuong_id VARCHAR(50), -- ID của khu vực, vị trí hoặc thiết bị
+    mo_ta TEXT NOT NULL,
+    muc_do_uu_tien ENUM('Thấp', 'Vừa', 'Cao', 'Khẩn_cấp') DEFAULT 'Vừa',
+    nguoi_tao VARCHAR(50) NOT NULL,
+    nguoi_thuc_hien JSON, -- ["user1", "user2"]
+    thoi_gian_bat_dau DATETIME,
+    thoi_gian_ket_thuc DATETIME,
+    thoi_gian_uoc_tinh INT DEFAULT 0, -- giờ
+    chi_phi_uoc_tinh DECIMAL(15,2) DEFAULT 0,
+    chi_phi_thuc_te DECIMAL(15,2) DEFAULT 0,
+    trang_thai ENUM('Kế_hoạch', 'Đang_thực_hiện', 'Hoàn_thành', 'Tạm_dừng', 'Hủy') DEFAULT 'Kế_hoạch',
+    ket_qua TEXT, -- mô tả kết quả sau khi hoàn thành
+    hinh_anh_truoc JSON, -- ảnh trước khi bảo trì
+    hinh_anh_sau JSON, -- ảnh sau khi bảo trì
+    ghi_chu TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_loai_bao_tri (loai_bao_tri),
+    INDEX idx_trang_thai (trang_thai),
+    INDEX idx_muc_do_uu_tien (muc_do_uu_tien)
+);
+```
+
+### Bảng `nha_cung_cap` (mới)
+```sql
+CREATE TABLE nha_cung_cap (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    ma_nha_cung_cap VARCHAR(20) UNIQUE NOT NULL,
+    ten_nha_cung_cap VARCHAR(200) NOT NULL,
+    dia_chi TEXT,
+    so_dien_thoai VARCHAR(20),
+    email VARCHAR(100),
+    nguoi_lien_he VARCHAR(100),
+    so_dien_thoai_lien_he VARCHAR(20),
+    email_lien_he VARCHAR(100),
+    ma_so_thue VARCHAR(50),
+    loai_hang_cung_cap JSON, -- ["Bia", "Nước ngọt", "Nước suối"]
+    xep_hang ENUM('A', 'B', 'C', 'D') DEFAULT 'B',
+    trang_thai ENUM('Hoạt_động', 'Tạm_dừng', 'Ngừng') DEFAULT 'Hoạt_động',
+    ghi_chu TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### Bảng `cai_dat_he_thong` (mới)
+```sql
+CREATE TABLE cai_dat_he_thong (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    khoa_cai_dat VARCHAR(100) UNIQUE NOT NULL,
+    gia_tri TEXT NOT NULL,
+    mo_ta TEXT,
+    nhom_cai_dat VARCHAR(50) DEFAULT 'Chung',
+    kieu_du_lieu ENUM('string', 'number', 'boolean', 'json') DEFAULT 'string',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Dữ liệu mặc định cho cài đặt
+INSERT INTO cai_dat_he_thong (khoa_cai_dat, gia_tri, mo_ta, nhom_cai_dat) VALUES
+('canh_bao_het_han_truoc', '7', 'Cảnh báo trước bao nhiêu ngày khi hàng hết hạn', 'Cảnh_báo'),
+('canh_bao_ton_kho_thap', '10', 'Cảnh báo khi tồn kho dưới ngưỡng (thùng)', 'Cảnh_báo'),
+('chu_ky_kiem_ke_tu_dong', '30', 'Chu kỳ kiểm kê tự động (ngày)', 'Kiểm_kê'),
+('ty_le_su_dung_kho_toi_da', '85', 'Tỷ lệ sử dụng kho tối đa (%)', 'Kho'),
+('thoi_gian_lam_viec_bat_dau', '07:00', 'Giờ bắt đầu ca làm việc', 'Thời_gian'),
+('thoi_gian_lam_viec_ket_thuc', '18:00', 'Giờ kết thúc ca làm việc', 'Thời_gian');
+```# Hệ thống Quản lý Xuất Nhập Kho Thông minh
+
+## Tổng quan
+
+Hệ thống quản lý kho thông minh với 5 module chính, hỗ trợ nhập kho theo pallet, xuất kho theo đơn lẻ, quản lý kho toàn diện, kiểm tra chất lượng và xác thực giao hàng bằng QR code với âm thanh báo hiệu.
+
+## Kiến trúc hệ thống
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   MODULE 1      │    │   MODULE 2      │    │   MODULE 3      │    │   MODULE 4      │    │   MODULE 5      │
+│   NHẬP HÀNG     │    │   TẠO ĐƠN       │    │   XUẤT HÀNG     │    │   QUẢN LÝ KHO   │    │   KIỂM TRA      │
+│                 │    │                 │    │                 │    │                 │    │   GIAO HÀNG     │
+│ • Tạo pallet    │    │ • Quản lý CH    │    │ • Danh sách đơn │    │ • Quản lý vị trí│    │ • Quét QR       │
+│ • In QR pallet  │    │ • Quản lý SP    │    │ • Phân bổ auto  │    │ • Quản lý hàng  │    │ • Âm thanh báo  │
+│ • Lưu database  │    │ • Tạo đơn xuất  │    │ • In QR đơn     │    │ • Tình trạng    │    │ • Xác thực CH   │
+│                 │    │                 │    │ • Tùy chỉnh TT  │    │ • Kiểm kê       │    │ • Báo cáo giao  │
+└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │                       │                       │
+         └───────────────────────┼───────────────────────┼───────────────────────┼───────────────────────┘
+                                 │                       │                       │
+                         ┌───────▼───────────────────────▼───────────────────────▼───────┐
+                         │                   DATABASE MYSQL                            │
+                         │ • pallets • san_pham • vi_tri_kho • tinh_trang_hang        │
+                         │ • don_xuat • chi_tiet_don • khu_vuc • kiem_ke              │
+                         │ • cua_hang • log_kiem_tra • bao_tri • nhom_hang            │
+                         └─────────────────────────────────────────────────────────────┘
+```
+
+## Chi tiết các Module
+
+### MODULE 1: NHẬP HÀNG
+
+**Chức năng chính:**
+- Tạo pallet mới với mã tự động (P-YYYY-XXX)
+- Quản lý thông tin sản phẩm, số lượng, vị trí
+- Theo dõi ngày sản xuất, hạn sử dụng, ngày kiểm tra chất lượng
+- In QR code cho pallet
+
+**Quy trình:**
+```
+Nhập thông tin → Tạo mã pallet → Lưu database → In QR code → Dán lên pallet vật lý
+```
+
+ kiểm tra chất lượng**
+- Ghi chú
+
+### MODULE 2: TẠO ĐƠN
+
+**2.1 Quản lý Cửa hàng**
+- CRUD cửa hàng (tên, địa chỉ, SĐT)
+- Phân loại theo khu vực
+
+**2.2 Quản lý Sản phẩm**
+- Danh mục phân cấp theo loại
+- Template sản phẩm thường dùng
+
+**2.3 Tạo đơn xuất**
+- Giao diện giống Excel
+- Chọn cửa hàng + sản phẩm + số lượng
+- Phân bổ pallet tự động hoặc thủ công
+
+**Thuật toán phân bổ:**
+```
+1. Tìm pallet cùng sản phẩm
+2. Sắp xếp ưu tiên:
+   - Pallet đã mở (ít thùng trước)
+   - Gần hết hạn sử dụng
+   - Gần đến ngày kiểm tra CL
+   - FIFO (nhập trước xuất trước)
+3. Phân bổ tối ưu để làm hết pallet cũ
+```
+
+### MODULE 3: XUẤT HÀNG
+
+**Chức năng:**
+- Hiển thị danh sách đơn chờ xuất
+- Checklist từng pallet cần lấy
+- Cập nhật số lượng tồn kho real-time
+- In QR code cho đơn hàng hoàn chỉnh
+
+**QR Code đơn hàng chứa:**
+```json
+{
+  "don_hang_id": "XK-001",
+  "cua_hang": "Tên cửa hàng",
+  "cua_hang_id": "CH001",
+  "ngay_xuat": "2025-06-09",
+  "danh_sach_hang": [...],
+  "tong_thung": 80,
+  "ma_xac_thuc": "AUTH-XK001-CH001"
+}
+```
+
+### MODULE 4: QUẢN LÝ KHO
+
+**Chức năng tổng quan:**
+- Quản lý cấu hình kho toàn diện
+- Theo dõi tình trạng hàng hóa real-time
+- Kiểm kê và bảo trì định kỳ
+- Phân tích hiệu suất sử dụng kho
+
+**4.1. Dashboard tổng quan kho**
+```
+┌─ DASHBOARD QUẢN LÝ KHO ───────────────────────┐
+│                                               │
+│ ┌─ TỔNG QUAN ────────────────────────────────┐ │
+│ │ 📦 Tổng vị trí: 150     🟢 Trống: 45      │ │
+│ │ 📋 Tổng pallet: 105     🔴 Đầy: 90        │ │
+│ │ ⚠️ Cần bảo trì: 15      🟡 Bảo trì: 15    │ │
+│ │ 📊 Tỷ lệ sử dụng: 60%   📈 Hiệu suất: 85% │ │
+│ └───────────────────────────────────────────┘ │
+│                                               │
+│ ┌─ CẢNH BÁO ────────────────────────────────┐ │
+│ │ ⚠️ 5 pallet sắp hết hạn trong 3 ngày      │ │
+│ │ 🔧 Khu vực B cần bảo trì định kỳ          │ │
+│ │ 📦 Kho đang đầy 85% - cần mở rộng         │ │
+│ │ 🧪 12 pallet cần kiểm tra CL hôm nay      │ │
+│ └───────────────────────────────────────────┘ │
+│                                               │
+│ [📍 Quản lý vị trí] [📦 Quản lý hàng hóa]    │
+│ [🔧 Bảo trì] [📊 Báo cáo] [⚙️ Cài đặt]      │
+└───────────────────────────────────────────────┘
+```
+
+**4.2. Quản lý vị trí kho**
+```
+┌─ QUẢN LÝ VỊ TRÍ KHO ──────────────────────────┐
+│                                               │
+│ [+ Thêm khu vực] [+ Thêm vị trí] [🗺️ Xem map] │
+│                                               │
+│ ┌─ KHU VỰC A - Bia & Nước ngọt ─────────────┐ │
+│ │ Kích thước: 5x3 (15 vị trí)                │ │
+│ │ Trạng thái: Hoạt động                       │ │
+│ │ Sử dụng: 12/15 (80%)                       │ │
+│ │                                             │ │
+│ │  A1🟢  A2🔴  A3🟢  A4🔴  A5🟡              │ │
+│ │  B1🔴  B2🔴  B3🔴  B4🟢  B5🔴              │ │
+│ │  C1🔴  C2🔴  C3🟢  C4🔴  C5🔴              │ │
+│ │                                             │ │
+│ │ [✏️ Sửa] [🔧 Bảo trì] [📊 Thống kê]        │ │
+│ └─────────────────────────────────────────────┘ │
+│                                               │
+│ ┌─ KHU VỰC B - Nước suối ───────────────────┐ │
+│ │ Kích thước: 4x4 (16 vị trí)                │ │
+│ │ Trạng thái: Bảo trì                         │ │
+│ │ Sử dụng: 8/16 (50%)                        │ │
+│ │ [✏️ Sửa] [✅ Hoàn thành BT] [📊 Thống kê]  │ │
+│ └─────────────────────────────────────────────┘ │
+└───────────────────────────────────────────────┘
+```
+
+**4.3. Thêm/Sửa vị trí kho**
+```
+┌─ THÊM VỊ TRÍ KHO MỚI ─────────────────────────┐
+│                                               │
+│ Khu vực: [Dropdown: A/B/C/D...]               │
+│ Từ vị trí: [A] [1] Đến vị trí: [A] [5]        │
+│ Loại vị trí: [Dropdown: Pallet/Carton/Bulk]  │
+│ Tải trọng tối đa: [____] kg                   │
+│ Chiều cao tối đa: [____] cm                   │
+│ Nhiệt độ yêu cầu: [____]°C - [____]°C         │
+│ Độ ẩm yêu cầu: [____]% - [____]%              │
+│ Ghi chú: [Text area]                          │
+│                                               │
+│ ☐ Vị trí ưu tiên (FIFO)                      │
+│ ☐ Vị trí cách ly (hàng đặc biệt)             │
+│ ☐ Gần cửa ra (xuất nhanh)                    │
+│                                               │
+│ [💾 Lưu] [🔄 Reset] [❌ Hủy]                 │
+└───────────────────────────────────────────────┘
+```
+
+**4.4. Quản lý hàng hóa**
+```
+┌─ QUẢN LÝ HÀNG HÓA ────────────────────────────┐
+│                                               │
+│ [+ Thêm nhóm hàng] [+ Thêm sản phẩm] [🔍 Tìm] │
+│                                               │
+│ ┌─ NHÓM HÀNG ────────────────────────────────┐ │
+│ │                                             │ │
+│ │ 🍺 Bia (25 sản phẩm)                       │ │
+│ │ ├─ Heineken 330ml (Stock: 150 thùng)       │ │
+│ │ ├─ Tiger 355ml (Stock: 89 thùng)           │ │
+│ │ └─ Saigon 330ml (Stock: 200 thùng)         │ │
+│ │                                             │ │
+│ │ 🥤 Nước ngọt (18 sản phẩm)                 │ │
+│ │ ├─ Coca Cola 330ml (Stock: 75 thùng)       │ │
+│ │ ├─ Pepsi 355ml (Stock: 120 thùng)          │ │
+│ │ └─ Sprite 330ml (Stock: 95 thùng)          │ │
+│ │                                             │ │
+│ │ 💧 Nước suối (8 sản phẩm)                  │ │
+│ │ ├─ Lavie 500ml (Stock: 300 thùng)          │ │
+│ │ └─ Aquafina 1.5L (Stock: 180 thùng)        │ │
+│ └─────────────────────────────────────────────┘ │
+└───────────────────────────────────────────────┘
+```
+
+**4.5. Thêm sản phẩm mới**
+```
+┌─ THÊM SẢN PHẨM MỚI ───────────────────────────┐
+│                                               │
+│ Mã sản phẩm: [AUTO-SP-001] (tự động)         │
+│ Tên sản phẩm: [_________________]             │
+│ Nhóm hàng: [Dropdown: Bia/Nước ngọt...]      │
+│ Thương hiệu: [_________________]              │
+│ Dung tích: [____] ml                          │
+│ Đơn vị tính: [Dropdown: Thùng/Chai/Lốc]      │
+│ Số lượng/thùng: [____] chai                   │
+│                                               │
+│ ┌─ YÊU CẦU BẢO QUẢN ──────────────────────────┐ │
+│ │ Nhiệt độ: [____]°C - [____]°C              │ │
+│ │ Độ ẩm: [____]% - [____]%                   │ │
+│ │ ☐ Tránh ánh sáng                           │ │
+│ │ ☐ Tránh rung động                          │ │
+│ │ ☐ Hàng dễ vỡ                               │ │
+│ │ ☐ Hàng nguy hiểm                           │ │
+│ └─────────────────────────────────────────────┘ │
+│                                               │
+│ ┌─ THÔNG TIN BỔ SUNG ─────────────────────────┐ │
+│ │ Mã vạch: [_________________]                │ │
+│ │ Nhà cung cấp: [Dropdown + Thêm mới]        │ │
+│ │ Hạn sử dụng mặc định: [____] ngày          │ │
+│ │ Chu kỳ kiểm tra CL: [____] ngày            │ │
+│ │ Ghi chú: [Text area]                       │ │
+│ └─────────────────────────────────────────────┘ │
+│                                               │
+│ [💾 Lưu] [📷 Chụp ảnh] [❌ Hủy]              │
+└───────────────────────────────────────────────┘
+```
+
+**4.6. Quản lý tình trạng hàng**
+```
+┌─ QUẢN LÝ TÌNH TRẠNG HÀNG ─────────────────────┐
+│                                               │
+│ 📊 Filter: [Tất cả ▼] [Hôm nay ▼] [🔍 Tìm]  │
+│                                               │
+│ ┌─ HÀNG SẮP HẾT HẠN ─────────────────────────┐ │
+│ │ ⚠️ P-2025-001: Heineken - HSD: 12/06/2025  │ │
+│ │    Còn: 30 thùng | Vị trí: A1              │ │
+│ │    [🚀 Ưu tiên xuất] [📝 Ghi chú]          │ │
+│ │                                             │ │
+│ │ ⚠️ P-2025-015: Coca - HSD: 14/06/2025      │ │
+│ │    Còn: 45 thùng | Vị trí: C2              │ │
+│ │    [🚀 Ưu tiên xuất] [📝 Ghi chú]          │ │
+│ └─────────────────────────────────────────────┘ │
+│                                               │
+│ ┌─ HÀNG CẦN KIỂM TRA CL ─────────────────────┐ │
+│ │ 🧪 P-2025-005: Tiger - Ngày CL: 09/06/2025 │ │
+│ │    [✅ Đã kiểm tra] [❌ Có vấn đề]          │ │
+│ │                                             │ │
+│ │ 🧪 P-2025-020: Sprite - Ngày CL: 09/06/25  │ │
+│ │    [✅ Đã kiểm tra] [❌ Có vấn đề]          │ │
+│ └─────────────────────────────────────────────┘ │
+│                                               │
+│ ┌─ HÀNG CÓ VẤN ĐỀ ───────────────────────────┐ │
+│ │ ❌ P-2025-012: Lavie - Bao bì hỏng          │ │
+│ │    [🔧 Xử lý] [🗑️ Thanh lý] [📝 Báo cáo]   │ │
+│ └─────────────────────────────────────────────┘ │
+└───────────────────────────────────────────────┘
+```
+
+**4.7. Kiểm kê kho**
+```
+┌─ KIỂM KÊ KHO ─────────────────────────────────┐
+│                                               │
+│ ┌─ TẠO PHIÊN KIỂM KÊ MỚI ───────────────────┐ │
+│ │ Loại kiểm kê: [Dropdown]                   │ │
+│ │ ☐ Toàn bộ kho                              │ │
+│ │ ☐ Theo khu vực: [A/B/C...]                │ │
+│ │ ☐ Theo nhóm hàng: [Bia/Nước ngọt...]      │ │
+│ │ ☐ Theo ngày hết hạn: [Date range]         │ │
+│ │                                            │ │
+│ │ Người kiểm kê: [Multi-select]             │ │
+│ │ Ngày kiểm kê: [Date picker]               │ │
+│ │ Ghi chú: [Text area]                      │ │
+│ │                                            │ │
+│ │ [🚀 Bắt đầu kiểm kê] [📄 In danh sách]    │ │
+│ └────────────────────────────────────────────┘ │
+│                                               │
+│ ┌─ LỊCH SỬ KIỂM KÊ ──────────────────────────┐ │
+│ │ 📅 08/06/2025 - Khu vực A (Hoàn thành)     │ │
+│ │    Chênh lệch: +2 thùng Heineken           │ │
+│ │    [👁️ Xem chi tiết] [📊 Báo cáo]          │ │
+│ │                                            │ │
+│ │ 📅 01/06/2025 - Toàn kho (Hoàn thành)      │ │
+│ │    Chênh lệch: -5 thùng Coca, +3 Sprite   │ │
+│ │    [👁️ Xem chi tiết] [📊 Báo cáo]          │ │
+│ └────────────────────────────────────────────┘ │
+└───────────────────────────────────────────────┘
+```
+
+**4.8. Bảo trì kho**
+```
+┌─ QUẢN LÝ BẢO TRÌ ─────────────────────────────┐
+│                                               │
+│ ┌─ KẾ HOẠCH BẢO TRÌ ─────────────────────────┐ │
+│ │ 🔧 Hôm nay (09/06):                        │ │
+│ │ • Vệ sinh khu vực B (14:00-16:00)          │ │
+│ │ • Kiểm tra hệ thống điều hòa A3            │ │
+│ │ • Thay đèn LED tại C1-C5                   │ │
+│ │                                            │ │
+│ │ 📅 Tuần này:                               │ │
+│ │ • Bảo trì xe nâng #001 (12/06)            │ │
+│ │ • Kiểm tra camera an ninh (14/06)         │ │
+│ │ • Vệ sinh tổng thể kho (15/06)            │ │
+│ └────────────────────────────────────────────┘ │
+│                                               │
+│ ┌─ TẠO CÔNG VIỆC BẢO TRÌ ───────────────────┐ │
+│ │ Loại: [Dropdown: Vệ sinh/Sửa chữa/...]    │ │
+│ │ Vị trí: [Dropdown khu vực/vị trí cụ thể]  │ │
+│ │ Mô tả: [Text area]                        │ │
+│ │ Ưu tiên: ○ Thấp ○ Vừa ● Cao ○ Khẩn cấp   │ │
+│ │ Người thực hiện: [Multi-select]           │ │
+│ │ Thời gian: [Date time picker]             │ │
+│ │ Ước tính: [___] giờ                       │ │
+│ │                                            │ │
+│ │ [💾 Lưu] [📋 Thêm vào lịch] [❌ Hủy]      │ │
+│ └────────────────────────────────────────────┘ │
+└───────────────────────────────────────────────┘
+```
+
+### MODULE 5: KIỂM TRA GIAO HÀNG
+
+**Chức năng:**
+- Quét QR code đơn hàng
+- So sánh cửa hàng đích với thực tế
+- Âm thanh báo hiệu kết quả
+- Ghi log kiểm tra
+
+**Âm thanh báo:**
+- ✅ ĐÚNG: "BEEP BEEP" (2 tiếng ngắn, cao)
+- ❌ SAI: "BEEP BEEP BEEP" (3 tiếng dài, thấp)
+- ❓ LỖI: "BEEP" (1 tiếng thấp)
+
+## Cấu trúc Database
+
+### Bảng `pallets`
+```sql
+CREATE TABLE pallets (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    ma_pallet VARCHAR(20) UNIQUE NOT NULL,
+    loai_hang VARCHAR(50) NOT NULL,
+    ten_san_pham VARCHAR(100) NOT NULL,
+    so_thung_ban_dau INT NOT NULL,
+    so_thung_con_lai INT NOT NULL,
+    vi_tri_kho VARCHAR(10) NOT NULL,
+    ngay_san_xuat DATE NOT NULL,
+    han_su_dung DATE NOT NULL,
+    ngay_kiem_tra_cl DATE NOT NULL,
+    trang_thai ENUM('Mới', 'Đã_mở', 'Trống') DEFAULT 'Mới',
+    ghi_chu TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### Bảng `cua_hang`
+```sql
+CREATE TABLE cua_hang (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    ma_cua_hang VARCHAR(20) UNIQUE NOT NULL,
+    ten_cua_hang VARCHAR(100) NOT NULL,
+    dia_chi TEXT NOT NULL,
+    so_dien_thoai VARCHAR(15),
+    khu_vuc VARCHAR(50),
+    trang_thai ENUM('Hoạt_động', 'Tạm_dừng') DEFAULT 'Hoạt_động',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Bảng `san_pham`
+```sql
+CREATE TABLE san_pham (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    ten_san_pham VARCHAR(100) NOT NULL,
+    loai_hang VARCHAR(50) NOT NULL,
+    don_vi VARCHAR(20) DEFAULT 'thùng',
+    mo_ta TEXT,
+    trang_thai ENUM('Hoạt_động', 'Ngừng') DEFAULT 'Hoạt_động',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Bảng `don_xuat`
+```sql
+CREATE TABLE don_xuat (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    ma_don VARCHAR(20) UNIQUE NOT NULL,
+    cua_hang_id INT NOT NULL,
+    ngay_tao DATE NOT NULL,
+    ngay_giao DATE,
+    trang_thai ENUM('Chờ_xuất', 'Đang_xuất', 'Hoàn_thành', 'Hủy') DEFAULT 'Chờ_xuất',
+    qr_code_data TEXT,
+    da_in_qr BOOLEAN DEFAULT FALSE,
+    nguoi_tao VARCHAR(50),
+    ghi_chu TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (cua_hang_id) REFERENCES cua_hang(id)
+);
+```
+
+### Bảng `chi_tiet_don`
+```sql
+CREATE TABLE chi_tiet_don (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    don_xuat_id INT NOT NULL,
+    san_pham VARCHAR(100) NOT NULL,
+    so_luong_can INT NOT NULL,
+    pallet_assignments JSON,
+    da_xuat_xong BOOLEAN DEFAULT FALSE,
+    ghi_chu TEXT,
+    FOREIGN KEY (don_xuat_id) REFERENCES don_xuat(id)
+);
+```
+
+### Bảng `log_kiem_tra`
+```sql
+CREATE TABLE log_kiem_tra (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    don_hang_id VARCHAR(20) NOT NULL,
+    cua_hang_dich VARCHAR(100),
+    cua_hang_thuc VARCHAR(100),
+    ket_qua ENUM('DUNG', 'SAI', 'LOI') NOT NULL,
+    ngay_kiem_tra DATETIME DEFAULT CURRENT_TIMESTAMP,
+    nguoi_kiem_tra VARCHAR(50),
+    vi_tri_gps VARCHAR(100),
+    ghi_chu TEXT,
+    INDEX idx_don_hang (don_hang_id),
+    INDEX idx_ngay_kiem_tra (ngay_kiem_tra)
+);
+```
+
+### Bảng `vi_tri_kho` (mới)
+```sql
+CREATE TABLE vi_tri_kho (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    ma_vi_tri VARCHAR(10) UNIQUE NOT NULL, -- A1, A2, B1, B2...
+    hang CHAR(1) NOT NULL, -- A, B, C, D, E
+    cot INT NOT NULL, -- 1, 2, 3, 4, 5
+    trang_thai ENUM('Trống', 'Có_hàng', 'Bảo_trì') DEFAULT 'Trống',
+    pallet_id INT NULL,
+    ghi_chu TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (pallet_id) REFERENCES pallets(id),
+    UNIQUE KEY unique_hang_cot (hang, cot)
+);
+```
+
+### Bảng `thu_tu_xuat_hang` (mới)
+```sql
+CREATE TABLE thu_tu_xuat_hang (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    don_xuat_id INT NOT NULL,
+    san_pham VARCHAR(100) NOT NULL,
+    thu_tu_mac_dinh INT NOT NULL,
+    thu_tu_tuy_chinh INT NULL,
+    thoi_gian_uoc_tinh INT DEFAULT 0, -- phút
+    khoang_cach_uoc_tinh INT DEFAULT 0, -- mét
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (don_xuat_id) REFERENCES don_xuat(id)
+);
+```
+```sql
+CREATE TABLE lich_su_xuat_nhap (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    pallet_id INT NOT NULL,
+    loai_giao_dich ENUM('Nhập', 'Xuất') NOT NULL,
+    so_luong INT NOT NULL,
+    don_xuat_id INT NULL,
+    nguoi_thuc_hien VARCHAR(50),
+    ngay_thuc_hien DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ghi_chu TEXT,
+    FOREIGN KEY (pallet_id) REFERENCES pallets(id),
+    FOREIGN KEY (don_xuat_id) REFERENCES don_xuat(id)
+);
+```
+
+## Quy trình hoạt động
+
+### 1. Quy trình Nhập kho
+```
+1. Hàng đến kho
+2. Nhân viên mở Module 1
+3. Nhập thông tin pallet (loại hàng, số thùng, ngày CL...)
+4. Click chọn vị trí → Hiện giao diện grid kho
+   - Ô xanh (TRỐNG): Có thể chọn
+   - Ô đỏ (P-XXX): Đã có hàng, không chọn được
+5. Click vào ô trống → Xác nhận vị trí
+6. Hệ thống tạo mã P-2025-XXX
+7. In QR code và dán lên pallet
+8. Đưa pallet vào vị trí đã chọn
+9. Cập nhật database (trạng thái "Mới", vị trí "Có_hàng")
+```
+
+### 2. Quy trình Tạo đơn
+```
+1. Nhân viên mở Module 2
+2. Chọn cửa hàng cần giao
+3. Thêm sản phẩm và số lượng (giao diện Excel)
+4. Hệ thống tự động phân bổ pallet tối ưu
+5. Xem trước và chỉnh sửa nếu cần
+6. Tạo đơn xuất và lưu database
+```
+
+### 3. Quy trình Xuất kho
+```
+1. Nhân viên kho mở Module 3
+2. Chọn đơn hàng cần xuất
+3. Tuỳ chỉnh thứ tự xuất hàng (optional):
+   - Drag & drop để sắp xếp lại
+   - Xem đề xuất tuyến đường tối ưu
+   - Lưu thứ tự tùy chỉnh
+4. Làm theo checklist đã sắp xếp:
+   - Đi đến vị trí theo thứ tự (A1 → C1 → B2...)
+   - Quét QR pallet để xác nhận
+   - Lấy đúng số thùng
+   - Tick ✓ hoàn thành từng bước
+5. Khi xong hết: In QR code đơn hàng
+6. Cập nhật số tồn kho và vị trí kho tự động
+```
+
+### 4. Quy trình Quản lý kho
+```
+1. Quản lý viên mở Module 4
+2. Kiểm tra dashboard tổng quan:
+   - Tình trạng sử dụng kho
+   - Cảnh báo cần xử lý
+   - Lịch bảo trì hôm nay
+3. Xử lý các tác vụ ưu tiên:
+   - Cảnh báo hàng sắp hết hạn
+   - Kiểm tra chất lượng định kỳ
+   - Bảo trì thiết bị/khu vực
+4. Cập nhật thông tin:
+   - Thêm sản phẩm/nhóm hàng mới
+   - Cấu hình vị trí kho
+   - Lập lịch kiểm kê
+5. Phân tích và báo cáo hiệu suất
+```
+
+### 5. Quy trình Kiểm tra giao hàng
+```
+1. Tài xế/nhân viên giao hàng mở Module 5 (mobile)
+2. Trước khi giao hàng: Quét QR trên đơn
+3. Hệ thống kiểm tra:
+   - Đúng cửa hàng → "BEEP BEEP" ✅
+   - Sai cửa hàng → "BEEP BEEP BEEP" ❌ + hiển thị cửa hàng đúng
+4. Ghi log kiểm tra vào database
+5. Tiếp tục giao hàng hoặc báo cáo sự cố
+```
+
+## Tính năng nâng cao
+
+### Tính năng quản lý kho toàn diện
+- **Dashboard thông minh:** Tổng quan real-time với KPI và cảnh báo
+- **Quản lý vị trí linh hoạt:** Thêm/sửa khu vực, cấu hình đặc tính riêng
+- **Phân loại hàng hóa:** Nhóm hàng với yêu cầu bảo quản cụ thể
+- **Theo dõi tình trạng:** Giám sát chất lượng, hạn sử dụng real-time
+- **Kiểm kê thông minh:** Lập lịch tự động, so sánh chênh lệch
+- **Bảo trì proactive:** Kế hoạch định kỳ với theo dõi chi phí
+- **Cấu hình linh hoạt:** Tùy chỉnh ngưỡng cảnh báo, quy trình
+
+### Tính năng quản lý vị trí kho
+- **Grid Map trực quan:** Hiển thị sơ đồ kho 2D với màu sắc
+- **Real-time status:** Cập nhật trạng thái vị trí ngay lập tức
+- **Click to select:** Chỉ cho phép chọn ô trống
+- **Visual feedback:** Màu xanh (trống), đỏ (có hàng), vàng (bảo trì)
+
+### Tính năng tuỳ chỉnh thứ tự xuất
+- **Drag & Drop:** Kéo thả sản phẩm để đổi thứ tự
+- **Tối ưu tuyến đường:** AI đề xuất thứ tự ngắn nhất
+- **Ước tính thời gian:** Tính toán thời gian cho từng task
+- **Visual route:** Hiển thị tuyến đường trên map kho
+- **Hết hạn sử dụng:** Cảnh báo khi còn 7 ngày
+- **Kiểm tra CL:** Nhắc nhở khi đến ngày kiểm tra
+- **Tồn kho thấp:** Cảnh báo khi sản phẩm < 10 thùng
+- **Pallet cũ:** Ưu tiên xuất pallet đã mở > 2 tuần
+
+### Báo cáo và thống kê nâng cao
+- **Dashboard KPI:** Tỷ lệ sử dụng kho, hiệu suất xuất nhập, chất lượng hàng
+- **Báo cáo xuất nhập:** Theo ngày/tuần/tháng với phân tích xu hướng
+- **Thống kê giao hàng:** Tỷ lệ chính xác, thời gian giao, lỗi thường gặp
+- **Phân tích hiệu suất:** Nhân viên, khu vực, sản phẩm
+- **Báo cáo kiểm kê:** Chênh lệch, nguyên nhân, xu hướng
+- **Chi phí bảo trì:** Theo loại, tần suất, hiệu quả
+- **Dự báo nhu cầu:** AI phân tích pattern xuất nhập
+- **ROI kho bãi:** Hiệu quả sử dụng không gian, tối ưu hóa
+
+### Tích hợp công nghệ nâng cao
+- **Mobile App:** App đa nền tảng cho tất cả stakeholders
+- **Offline Mode:** Đồng bộ tự động khi có mạng trở lại
+- **GPS Tracking:** Theo dõi xe giao hàng, xác thực vị trí
+- **Camera AI:** Nhận diện sản phẩm, đọc mã vạch tự động
+- **IoT Sensors:** Giám sát nhiệt độ/độ ẩm real-time
+- **RFID Support:** Tương lai mở rộng từ QR sang RFID
+- **Voice Commands:** Điều khiển bằng giọng nói hands-free
+- **AR Navigation:** Thực tế ảo chỉ đường trong kho lớn
+
+## Yêu cầu kỹ thuật
+
+### Backend
+- **Framework:** Laravel/Node.js/Spring Boot
+- **Database:** MySQL 8.0+
+- **API:** RESTful API + WebSocket cho real-time
+- **Cache:** Redis cho session và tạm thời
+
+### Frontend  
+- **Web:** React.js/Vue.js + Bootstrap/Tailwind
+- **Mobile:** React Native/Flutter
+- **QR Scanner:** QuaggaJS/ZXing
+- **Audio:** Web Audio API
+
+### Infrastructure
+- **Server:** Linux Ubuntu 20.04+
+- **Web Server:** Nginx/Apache
+- **SSL:** Let's Encrypt
+- **Backup:** Tự động hàng ngày
+
+## Hướng dẫn cài đặt
+
+### 1. Chuẩn bị môi trường
+```bash
+# Cài đặt dependencies
+sudo apt update
+sudo apt install mysql-server nginx php8.1 php8.1-mysql
+sudo apt install nodejs npm git
+
+# Clone repository
+git clone https://github.com/your-repo/warehouse-management.git
+cd warehouse-management
+```
+
+### 2. Cấu hình Database
+```bash
+# Tạo database
+mysql -u root -p
+CREATE DATABASE warehouse_db;
+CREATE USER 'warehouse_user'@'localhost' IDENTIFIED BY 'your_password';
+GRANT ALL PRIVILEGES ON warehouse_db.* TO 'warehouse_user'@'localhost';
+
+# Import schema
+mysql -u warehouse_user -p warehouse_db < database/schema.sql
+```
+
+### 3. Cấu hình ứng dụng
+```bash
+# Backend setup
+cd backend
+cp .env.example .env
+# Chỉnh sửa .env với thông tin database
+npm install
+npm run migrate
+
+# Frontend setup  
+cd ../frontend
+npm install
+npm run build
+```
+
+### 4. Khởi động dịch vụ
+```bash
+# Start backend
+cd backend
+npm start
+
+# Start frontend (development)
+cd frontend  
+npm run dev
+```
+
+## Bảo mật
+
+### Authentication & Authorization
+- JWT tokens cho web API
+- Role-based access control (Admin, Manager, Employee)
+- Session timeout after 8 hours
+
+### Data Protection
+- Encryption cho sensitive data
+- SQL injection prevention
+- XSS protection
+- CSRF tokens
+
+### Audit Trail
+- Log tất cả thao tác quan trọng
+- IP tracking cho login attempts
+- File backup hàng ngày
+
+## FAQ
+
+**Q: Làm sao khi QR code bị hỏng?**
+A: Có thể nhập mã thủ công hoặc in lại QR từ database.
+
+**Q: Xử lý như thế nào khi mất mạng?**
+A: App mobile có offline mode, đồng bộ khi có mạng trở lại.
+
+**Q: Có thể xuất một phần pallet không?**
+A: Có, hệ thống tự cập nhật số lượng còn lại và đánh dấu "Đã mở".
+
+**Q: Làm sao theo dõi hàng hết hạn?**
+A: Dashboard có cảnh báo tự động và báo cáo hàng sắp hết hạn.
+
+## Liên hệ hỗ trợ
+
+- **Technical Support:** tech@company.com
+- **User Manual:** docs.company.com/warehouse
+- **Bug Reports:** github.com/your-repo/issues

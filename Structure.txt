@@ -1,0 +1,549 @@
+# Cấu trúc thư mục dự án Hệ thống Quản lý Kho
+
+```
+warehouse-management-system/
+├── README.md
+├── LICENSE
+├── .gitignore
+├── docker-compose.yml
+├── package.json
+├── .env.example
+│
+├── frontend/                           # Frontend React.js
+│   ├── package.json
+│   ├── .env.example
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── favicon.ico
+│   │   ├── manifest.json
+│   │   └── icons/
+│   │       ├── app-icon-192.png
+│   │       └── app-icon-512.png
+│   │
+│   ├── src/
+│   │   ├── index.js
+│   │   ├── App.js
+│   │   ├── App.css
+│   │   │
+│   │   ├── components/                 # Component tái sử dụng
+│   │   │   ├── common/
+│   │   │   │   ├── Header.js
+│   │   │   │   ├── Sidebar.js
+│   │   │   │   ├── Footer.js
+│   │   │   │   ├── Loading.js
+│   │   │   │   ├── Modal.js
+│   │   │   │   ├── Toast.js
+│   │   │   │   ├── Pagination.js
+│   │   │   │   ├── DataTable.js
+│   │   │   │   ├── SearchBox.js
+│   │   │   │   ├── DatePicker.js
+│   │   │   │   └── ConfirmDialog.js
+│   │   │   │
+│   │   │   ├── forms/
+│   │   │   │   ├── FormInput.js
+│   │   │   │   ├── FormSelect.js
+│   │   │   │   ├── FormTextarea.js
+│   │   │   │   ├── FormDatePicker.js
+│   │   │   │   └── FormValidation.js
+│   │   │   │
+│   │   │   ├── warehouse/              # Components cho kho
+│   │   │   │   ├── WarehouseGrid.js    # Grid map kho
+│   │   │   │   ├── LocationSelector.js # Chọn vị trí
+│   │   │   │   ├── PalletCard.js       # Card hiển thị pallet
+│   │   │   │   └── WarehouseStats.js   # Thống kê kho
+│   │   │   │
+│   │   │   ├── qr/
+│   │   │   │   ├── QRGenerator.js      # Tạo QR code
+│   │   │   │   ├── QRScanner.js        # Quét QR code
+│   │   │   │   └── QRDisplay.js        # Hiển thị QR
+│   │   │   │
+│   │   │   └── charts/
+│   │   │       ├── LineChart.js
+│   │   │       ├── BarChart.js
+│   │   │       ├── PieChart.js
+│   │   │       └── DashboardKPI.js
+│   │   │
+│   │   ├── pages/                      # Các trang chính
+│   │   │   ├── Dashboard/
+│   │   │   │   ├── Dashboard.js
+│   │   │   │   ├── Dashboard.css
+│   │   │   │   └── DashboardWidgets.js
+│   │   │   │
+│   │   │   ├── NhapHang/               # Module 1: Nhập hàng
+│   │   │   │   ├── NhapHang.js
+│   │   │   │   ├── NhapHang.css
+│   │   │   │   ├── ThemPallet.js
+│   │   │   │   ├── DanhSachPallet.js
+│   │   │   │   └── ChiTietPallet.js
+│   │   │   │
+│   │   │   ├── TaoDon/                 # Module 2: Tạo đơn
+│   │   │   │   ├── TaoDon.js
+│   │   │   │   ├── TaoDon.css
+│   │   │   │   ├── QuanLyCuaHang.js
+│   │   │   │   ├── QuanLySanPham.js
+│   │   │   │   ├── TaoDonXuat.js
+│   │   │   │   └── PhanBoPallet.js
+│   │   │   │
+│   │   │   ├── XuatHang/               # Module 3: Xuất hàng
+│   │   │   │   ├── XuatHang.js
+│   │   │   │   ├── XuatHang.css
+│   │   │   │   ├── DanhSachDon.js
+│   │   │   │   ├── XuatHangChiTiet.js
+│   │   │   │   ├── SapXepThuTu.js
+│   │   │   │   └── InQRDon.js
+│   │   │   │
+│   │   │   ├── QuanLyKho/              # Module 4: Quản lý kho
+│   │   │   │   ├── QuanLyKho.js
+│   │   │   │   ├── QuanLyKho.css
+│   │   │   │   ├── QuanLyViTri.js
+│   │   │   │   ├── QuanLyHangHoa.js
+│   │   │   │   ├── TinhTrangHang.js
+│   │   │   │   ├── KiemKe.js
+│   │   │   │   ├── BaoTri.js
+│   │   │   │   └── CaiDat.js
+│   │   │   │
+│   │   │   ├── KiemTraGiaoHang/        # Module 5: Kiểm tra giao hàng
+│   │   │   │   ├── KiemTraGiaoHang.js
+│   │   │   │   ├── KiemTraGiaoHang.css
+│   │   │   │   ├── QuetQR.js
+│   │   │   │   ├── KetQuaKiemTra.js
+│   │   │   │   └── LichSuKiemTra.js
+│   │   │   │
+│   │   │   ├── BaoCao/                 # Báo cáo và thống kê
+│   │   │   │   ├── BaoCao.js
+│   │   │   │   ├── BaoCao.css
+│   │   │   │   ├── BaoCaoXuatNhap.js
+│   │   │   │   ├── BaoCaoKiemKe.js
+│   │   │   │   ├── BaoCaoHieuSuat.js
+│   │   │   │   └── BaoCaoTaiChinh.js
+│   │   │   │
+│   │   │   ├── Auth/                   # Xác thực
+│   │   │   │   ├── Login.js
+│   │   │   │   ├── Login.css
+│   │   │   │   ├── Register.js
+│   │   │   │   ├── ForgotPassword.js
+│   │   │   │   └── ChangePassword.js
+│   │   │   │
+│   │   │   └── Settings/               # Cài đặt hệ thống
+│   │   │       ├── Settings.js
+│   │   │       ├── UserManagement.js
+│   │   │       ├── SystemConfig.js
+│   │   │       └── RolePermission.js
+│   │   │
+│   │   ├── hooks/                      # Custom React hooks
+│   │   │   ├── useAuth.js
+│   │   │   ├── useLocalStorage.js
+│   │   │   ├── useAPI.js
+│   │   │   ├── useQRScanner.js
+│   │   │   ├── useSound.js
+│   │   │   └── useWebSocket.js
+│   │   │
+│   │   ├── context/                    # React Context
+│   │   │   ├── AuthContext.js
+│   │   │   ├── WarehouseContext.js
+│   │   │   ├── NotificationContext.js
+│   │   │   └── SettingsContext.js
+│   │   │
+│   │   ├── services/                   # API services
+│   │   │   ├── api.js                  # Base API config
+│   │   │   ├── authService.js
+│   │   │   ├── palletService.js
+│   │   │   ├── orderService.js
+│   │   │   ├── warehouseService.js
+│   │   │   ├── reportService.js
+│   │   │   └── qrService.js
+│   │   │
+│   │   ├── utils/                      # Utility functions
+│   │   │   ├── constants.js
+│   │   │   ├── helpers.js
+│   │   │   ├── formatters.js
+│   │   │   ├── validators.js
+│   │   │   ├── dateUtils.js
+│   │   │   ├── audioUtils.js
+│   │   │   └── exportUtils.js
+│   │   │
+│   │   ├── assets/                     # Static assets
+│   │   │   ├── images/
+│   │   │   │   ├── logo.png
+│   │   │   │   ├── no-image.png
+│   │   │   │   └── warehouse-bg.jpg
+│   │   │   │
+│   │   │   ├── sounds/
+│   │   │   │   ├── success.mp3
+│   │   │   │   ├── error.mp3
+│   │   │   │   └── invalid.mp3
+│   │   │   │
+│   │   │   └── icons/
+│   │   │       ├── warehouse.svg
+│   │   │       ├── pallet.svg
+│   │   │       └── qr-code.svg
+│   │   │
+│   │   └── styles/                     # Global styles
+│   │       ├── index.css
+│   │       ├── variables.css
+│   │       ├── globals.css
+│   │       ├── responsive.css
+│   │       └── themes/
+│   │           ├── light.css
+│   │           └── dark.css
+│   │
+│   └── build/                          # Build output
+│
+├── backend/                            # Backend Node.js/Express
+│   ├── package.json
+│   ├── .env.example
+│   ├── server.js
+│   ├── app.js
+│   │
+│   ├── config/                         # Cấu hình
+│   │   ├── database.js
+│   │   ├── auth.js
+│   │   ├── multer.js                   # Upload files
+│   │   ├── socket.js                   # WebSocket
+│   │   └── constants.js
+│   │
+│   ├── controllers/                    # Controllers
+│   │   ├── authController.js
+│   │   ├── palletController.js
+│   │   ├── orderController.js
+│   │   ├── warehouseController.js
+│   │   ├── reportController.js
+│   │   ├── qrController.js
+│   │   ├── inventoryController.js
+│   │   ├── maintenanceController.js
+│   │   └── settingsController.js
+│   │
+│   ├── models/                         # Database models
+│   │   ├── index.js
+│   │   ├── User.js
+│   │   ├── Pallet.js
+│   │   ├── Order.js
+│   │   ├── OrderDetail.js
+│   │   ├── Store.js
+│   │   ├── Product.js
+│   │   ├── Warehouse.js
+│   │   ├── Location.js
+│   │   ├── ProductGroup.js
+│   │   ├── Supplier.js
+│   │   ├── Inventory.js
+│   │   ├── Maintenance.js
+│   │   ├── QualityCheck.js
+│   │   └── SystemSettings.js
+│   │
+│   ├── routes/                         # API routes
+│   │   ├── index.js
+│   │   ├── auth.js
+│   │   ├── pallets.js
+│   │   ├── orders.js
+│   │   ├── warehouse.js
+│   │   ├── reports.js
+│   │   ├── qr.js
+│   │   ├── inventory.js
+│   │   ├── maintenance.js
+│   │   └── settings.js
+│   │
+│   ├── middleware/                     # Middleware
+│   │   ├── auth.js                     # JWT authentication
+│   │   ├── validation.js               # Request validation
+│   │   ├── errorHandler.js
+│   │   ├── logger.js
+│   │   ├── rateLimiter.js
+│   │   └── upload.js                   # File upload
+│   │
+│   ├── services/                       # Business logic
+│   │   ├── authService.js
+│   │   ├── palletService.js
+│   │   ├── orderService.js
+│   │   ├── warehouseService.js
+│   │   ├── inventoryService.js
+│   │   ├── qrService.js
+│   │   ├── notificationService.js
+│   │   ├── reportService.js
+│   │   ├── emailService.js
+│   │   └── auditService.js
+│   │
+│   ├── utils/                          # Utility functions
+│   │   ├── helpers.js
+│   │   ├── validators.js
+│   │   ├── dateUtils.js
+│   │   ├── qrGenerator.js
+│   │   ├── excelExporter.js
+│   │   ├── pdfGenerator.js
+│   │   └── encryption.js
+│   │
+│   ├── jobs/                           # Background jobs
+│   │   ├── scheduler.js
+│   │   ├── expiryWarning.js           # Cảnh báo hết hạn
+│   │   ├── qualityCheckReminder.js    # Nhắc kiểm tra CL
+│   │   ├── inventorySync.js           # Đồng bộ tồn kho
+│   │   ├── maintenanceScheduler.js    # Lịch bảo trì
+│   │   └── reportGenerator.js         # Tạo báo cáo tự động
+│   │
+│   ├── uploads/                        # Uploaded files
+│   │   ├── images/
+│   │   ├── documents/
+│   │   └── temp/
+│   │
+│   └── logs/                           # Log files
+│       ├── app.log
+│       ├── error.log
+│       └── access.log
+│
+├── mobile/                             # Mobile App React Native
+│   ├── package.json
+│   ├── metro.config.js
+│   ├── index.js
+│   ├── App.js
+│   │
+│   ├── android/                        # Android specific
+│   │   └── app/
+│   │       └── src/main/
+│   │           └── AndroidManifest.xml
+│   │
+│   ├── ios/                           # iOS specific
+│   │   └── WarehouseApp/
+│   │       └── Info.plist
+│   │
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── QRScanner.js
+│   │   │   ├── LocationTracker.js
+│   │   │   ├── OfflineSync.js
+│   │   │   └── PushNotification.js
+│   │   │
+│   │   ├── screens/
+│   │   │   ├── LoginScreen.js
+│   │   │   ├── DashboardScreen.js
+│   │   │   ├── ScanQRScreen.js
+│   │   │   ├── DeliveryCheckScreen.js
+│   │   │   ├── InventoryScreen.js
+│   │   │   └── SettingsScreen.js
+│   │   │
+│   │   ├── navigation/
+│   │   │   ├── AppNavigator.js
+│   │   │   └── AuthNavigator.js
+│   │   │
+│   │   ├── services/
+│   │   │   ├── apiService.js
+│   │   │   ├── storageService.js
+│   │   │   ├── locationService.js
+│   │   │   └── notificationService.js
+│   │   │
+│   │   └── utils/
+│   │       ├── constants.js
+│   │       ├── helpers.js
+│   │       └── offlineQueue.js
+│   │
+│   └── assets/
+│       ├── images/
+│       ├── sounds/
+│       └── fonts/
+│
+├── database/                           # Database scripts
+│   ├── migrations/
+│   │   ├── 001_create_users.sql
+│   │   ├── 002_create_warehouses.sql
+│   │   ├── 003_create_locations.sql
+│   │   ├── 004_create_product_groups.sql
+│   │   ├── 005_create_products.sql
+│   │   ├── 006_create_suppliers.sql
+│   │   ├── 007_create_stores.sql
+│   │   ├── 008_create_pallets.sql
+│   │   ├── 009_create_orders.sql
+│   │   ├── 010_create_order_details.sql
+│   │   ├── 011_create_inventory_history.sql
+│   │   ├── 012_create_quality_status.sql
+│   │   ├── 013_create_maintenance.sql
+│   │   ├── 014_create_audit_logs.sql
+│   │   ├── 015_create_delivery_logs.sql
+│   │   └── 016_create_system_settings.sql
+│   │
+│   ├── seeds/
+│   │   ├── 001_users.sql
+│   │   ├── 002_warehouses.sql
+│   │   ├── 003_product_groups.sql
+│   │   ├── 004_products.sql
+│   │   ├── 005_stores.sql
+│   │   └── 006_system_settings.sql
+│   │
+│   ├── indexes/
+│   │   ├── performance_indexes.sql
+│   │   └── search_indexes.sql
+│   │
+│   ├── procedures/
+│   │   ├── sp_update_inventory.sql
+│   │   ├── sp_calculate_stock.sql
+│   │   ├── sp_generate_reports.sql
+│   │   └── sp_auto_pallet_assignment.sql
+│   │
+│   └── schema.sql                      # Complete schema
+│
+├── docs/                               # Documentation
+│   ├── API.md                          # API documentation
+│   ├── DEPLOYMENT.md                   # Deployment guide
+│   ├── USER_MANUAL.md                  # User manual
+│   ├── DEVELOPER_GUIDE.md              # Developer guide
+│   ├── TROUBLESHOOTING.md              # Troubleshooting
+│   │
+│   ├── api/                           # API docs
+│   │   ├── authentication.md
+│   │   ├── pallets.md
+│   │   ├── orders.md
+│   │   ├── warehouse.md
+│   │   └── reports.md
+│   │
+│   ├── screenshots/                    # App screenshots
+│   │   ├── dashboard.png
+│   │   ├── warehouse-grid.png
+│   │   ├── qr-scan.png
+│   │   └── mobile-app.png
+│   │
+│   └── diagrams/                       # System diagrams
+│       ├── architecture.png
+│       ├── database-erd.png
+│       ├── workflow.png
+│       └── deployment.png
+│
+├── scripts/                            # Utility scripts
+│   ├── deploy.sh                       # Deployment script
+│   ├── backup.sh                       # Database backup
+│   ├── restore.sh                      # Database restore
+│   ├── migrate.sh                      # Run migrations
+│   ├── seed.sh                         # Seed database
+│   ├── build.sh                        # Build all components
+│   └── test.sh                         # Run all tests
+│
+├── tests/                              # Test files
+│   ├── frontend/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── utils/
+│   │
+│   ├── backend/
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── utils/
+│   │
+│   ├── mobile/
+│   │   ├── components/
+│   │   ├── screens/
+│   │   └── services/
+│   │
+│   ├── integration/
+│   │   ├── api.test.js
+│   │   ├── database.test.js
+│   │   └── workflow.test.js
+│   │
+│   └── e2e/                           # End-to-end tests
+│       ├── login.test.js
+│       ├── pallet-management.test.js
+│       ├── order-flow.test.js
+│       └── mobile-delivery.test.js
+│
+├── deployment/                         # Deployment configs
+│   ├── docker/
+│   │   ├── Dockerfile.frontend
+│   │   ├── Dockerfile.backend
+│   │   ├── Dockerfile.nginx
+│   │   └── docker-compose.prod.yml
+│   │
+│   ├── kubernetes/
+│   │   ├── namespace.yaml
+│   │   ├── configmap.yaml
+│   │   ├── secret.yaml
+│   │   ├── frontend-deployment.yaml
+│   │   ├── backend-deployment.yaml
+│   │   ├── mysql-deployment.yaml
+│   │   ├── redis-deployment.yaml
+│   │   └── ingress.yaml
+│   │
+│   ├── nginx/
+│   │   ├── nginx.conf
+│   │   ├── ssl.conf
+│   │   └── api-gateway.conf
+│   │
+│   └── ssl/
+│       ├── generate-ssl.sh
+│       └── renew-ssl.sh
+│
+├── monitoring/                         # Monitoring & Logging
+│   ├── prometheus/
+│   │   ├── prometheus.yml
+│   │   └── rules.yml
+│   │
+│   ├── grafana/
+│   │   ├── dashboards/
+│   │   │   ├── system-metrics.json
+│   │   │   ├── api-performance.json
+│   │   │   └── warehouse-kpi.json
+│   │   └── datasources/
+│   │       └── prometheus.yml
+│   │
+│   └── logs/
+│       ├── logstash.conf
+│       └── filebeat.yml
+│
+└── tools/                              # Development tools
+    ├── code-generator/
+    │   ├── generate-model.js
+    │   ├── generate-controller.js
+    │   ├── generate-component.js
+    │   └── templates/
+    │
+    ├── data-migration/
+    │   ├── import-legacy.js
+    │   ├── export-data.js
+    │   └── transform-data.js
+    │
+    └── performance/
+        ├── load-test.js
+        ├── stress-test.js
+        └── benchmark.js
+```
+
+## Mô tả chi tiết các thư mục chính
+
+### **Frontend (React.js)**
+- **pages/**: Các module chính (Module 1-5) với component và CSS riêng
+- **components/**: Component tái sử dụng (common, forms, warehouse, qr, charts)
+- **hooks/**: Custom React hooks cho logic phức tạp
+- **services/**: API calls và data fetching
+- **utils/**: Helper functions và constants
+
+### **Backend (Node.js/Express)**
+- **controllers/**: Xử lý HTTP requests và responses
+- **models/**: Database models với Sequelize/Mongoose
+- **routes/**: API endpoints được tổ chức theo chức năng
+- **services/**: Business logic và external integrations
+- **jobs/**: Background tasks và scheduled jobs
+
+### **Mobile (React Native)**
+- **screens/**: Các màn hình mobile app
+- **components/**: Components mobile-specific
+- **services/**: API và offline sync
+- **navigation/**: App navigation structure
+
+### **Database**
+- **migrations/**: Database schema changes theo version
+- **seeds/**: Dữ liệu mẫu cho development
+- **procedures/**: Stored procedures cho performance
+
+### **Infrastructure**
+- **deployment/**: Docker, Kubernetes, Nginx configs
+- **monitoring/**: Prometheus, Grafana dashboards
+- **scripts/**: Automation scripts cho deployment và maintenance
+
+### **Testing**
+- **Unit tests**: Cho từng component/function
+- **Integration tests**: API và database testing
+- **E2E tests**: Complete user workflows
+
+Cấu trúc này đảm bảo:
+-  **Scalability**: Dễ mở rộng thêm features
+-  **Maintainability**: Code được tổ chức rõ ràng
+- **Separation of Concerns**: Frontend/Backend/Mobile tách biệt
+-  **DevOps Ready**: Docker, K8s, monitoring included
+-  **Team Collaboration**: Nhiều dev có thể làm song song

@@ -1,25 +1,41 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { AuthProvider } from "./context/AuthContext"
+import { NotificationProvider } from "./context/NotificationContext"
+import Header from "./components/common/Header"
+import Sidebar from "./components/common/Sidebar"
+import Dashboard from "./pages/Dashboard/Dashboard"
+import NhapHang from "./pages/NhapHang/NhapHang"
+import TaoDon from "./pages/TaoDon/TaoDon"
+import XuatHang from "./pages/XuatHang/XuatHang"
+import KiemTraGiaoHang from "./pages/KiemTraGiaoHang/KiemTraGiaoHang"
+import "./App.css"
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <AuthProvider>
+      <NotificationProvider>
+        <Router>
+          <div className="app">
+            <Header />
+            <div className="app-body">
+              <Sidebar />
+              <main className="main-content">
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/nhap-hang" element={<NhapHang />} />
+                  <Route path="/nhap-hang/*" element={<NhapHang />} />
+                  <Route path="/tao-don/*" element={<TaoDon />} />
+                  <Route path="/xuat-hang/*" element={<XuatHang />} />
+                  <Route path="/kiem-tra/*" element={<KiemTraGiaoHang />} />
+                </Routes>
+              </main>
+            </div>
+          </div>
+        </Router>
+      </NotificationProvider>
+    </AuthProvider>
+  )
 }
 
-export default App;
+export default App
