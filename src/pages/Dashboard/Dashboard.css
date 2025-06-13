@@ -135,3 +135,47 @@
     }
   }
   
+
+  .card-body {
+    padding: 16px;
+  }
+  
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+  }
+  
+  .activity-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .activity-content {
+    flex: 1;
+    text-align: left;
+  }
+  
+  .activity-message {
+    margin: 0;
+    font-weight: 500;
+  }
+  
+  .activity-time {
+    font-size: 0.875rem;
+    color: #888;
+  }
+  

@@ -8,6 +8,7 @@ import NhapHang from "./pages/NhapHang/NhapHang"
 import TaoDon from "./pages/TaoDon/TaoDon"
 import XuatHang from "./pages/XuatHang/XuatHang"
 import KiemTraGiaoHang from "./pages/KiemTraGiaoHang/KiemTraGiaoHang"
+import QuanLyKho from "./pages/QuanLyKho/QuanLyKho"
 import "./App.css"
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
                   <Route path="/tao-don/*" element={<TaoDon />} />
                   <Route path="/xuat-hang/*" element={<XuatHang />} />
                   <Route path="/kiem-tra/*" element={<KiemTraGiaoHang />} />
+                  <Route path="/quan-ly-kho/*" element={<QuanLyKho />} />
                 </Routes>
               </main>
             </div>

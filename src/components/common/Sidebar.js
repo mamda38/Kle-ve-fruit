@@ -72,20 +72,20 @@ const Sidebar = () => {
       path: "/kiem-tra",
       active: location.pathname.startsWith("/kiem-tra"),
     },
-    {
-      id: "bao-cao",
-      title: "Báo cáo",
-      icon: PieChart,
-      path: "/bao-cao",
-      active: location.pathname.startsWith("/bao-cao"),
-    },
-    {
-      id: "settings",
-      title: "Cài đặt",
-      icon: Settings,
-      path: "/settings",
-      active: location.pathname.startsWith("/settings"),
-    },
+    // {
+    //   id: "bao-cao",
+    //   title: "Báo cáo",
+    //   icon: PieChart,
+    //   path: "/bao-cao",
+    //   active: location.pathname.startsWith("/bao-cao"),
+    // },
+    // {
+    //   id: "settings",
+    //   title: "Cài đặt",
+    //   icon: Settings,
+    //   path: "/settings",
+    //   active: location.pathname.startsWith("/settings"),
+    // },
   ]
 
   const toggleSubmenu = (menuId) => {

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { CheckCircle, Package, MapPin, AlertTriangle, Clock, Truck } from "lucide-react"
+import { CheckCircle, Package, MapPin, AlertTriangle, Truck } from "lucide-react"
 
 const ChecklistPallet = ({
   order,
@@ -38,13 +38,13 @@ const ChecklistPallet = ({
   }
 
   const getTotalProgress = () => {
-    const totalAllocations = order.items.reduce((total, item) => total + item.allocation.length, 0)
+    const totalAllocations = order.danh_sach_hang.reduce((total, item) => total + item.phan_bo.length, 0)
     const checkedAllocations = Object.values(checkedItems).filter(Boolean).length
     return Math.round((checkedAllocations / totalAllocations) * 100)
   }
 
   const isAllCompleted = () => {
-    const totalAllocations = order.items.reduce((total, item) => total + item.allocation.length, 0)
+    const totalAllocations = order.danh_sach_hang.reduce((total, item) => total + item.phan_bo.length, 0)
     const checkedAllocations = Object.values(checkedItems).filter(Boolean).length
     return checkedAllocations === totalAllocations
   }
@@ -67,22 +67,9 @@ const ChecklistPallet = ({
 
     return (
       <span className={`inventory-badge ${invStatus.status}`}>
-        {inv.available}/{inv.total} kg
+        {inv.available}/{inv.total} thùng
       </span>
     )
-  }
-
-  const getStepIcon = (step) => {
-    switch (step) {
-      case 1:
-        return <MapPin size={16} />
-      case 2:
-        return <Package size={16} />
-      case 3:
-        return <CheckCircle size={16} />
-      default:
-        return <Clock size={16} />
-    }
   }
 
   return (
@@ -90,9 +77,9 @@ const ChecklistPallet = ({
       {/* Header */}
       <div className="checklist-header">
         <div className="order-info">
-          <h3>{order.orderCode}</h3>
+          <h3>{order.don_hang_id}</h3>
           <p>
-            {order.storeName} - {order.storeArea}
+            {order.cua_hang} - {order.khu_vuc}
           </p>
         </div>
         <div className="progress-info">
@@ -149,23 +136,23 @@ const ChecklistPallet = ({
 
       {/* Checklist Items */}
       <div className="checklist-items">
-        {order.items.map((item) => (
+        {order.danh_sach_hang.map((item) => (
           <div key={item.id} className="checklist-section">
             <div className="section-header">
               <div className="product-info">
-                <span className="product-code">{item.productCode}</span>
-                <span className="product-name">{item.productName}</span>
+                <span className="product-code">{item.ma_san_pham}</span>
+                <span className="product-name">{item.ten_san_pham}</span>
                 <span className="total-quantity">
-                  {item.quantity} {item.unit}
+                  {item.so_luong} {item.don_vi}
                 </span>
               </div>
             </div>
 
             <div className="allocation-checklist">
-              {item.allocation.map((allocation, index) => {
+              {item.phan_bo.map((allocation, index) => {
                 const key = `${item.id}-${index}`
                 const isChecked = checkedItems[key] || false
-                const invStatus = getInventoryStatus(allocation.palletCode)
+                const invStatus = getInventoryStatus(allocation.ma_pallet)
 
                 return (
                   <div key={index} className={`checklist-item ${isChecked ? "completed" : ""}`}>
@@ -184,17 +171,17 @@ const ChecklistPallet = ({
                     <div className="item-content">
                       <div className="item-main">
                         <div className="pallet-info">
-                          <span className="pallet-code">{allocation.palletCode}</span>
+                          <span className="pallet-code">{allocation.ma_pallet}</span>
                           <span className="location">
                             <MapPin size={12} />
-                            {allocation.location}
+                            {allocation.vi_tri}
                           </span>
                         </div>
                         <div className="quantity-info">
                           <span className="allocated-qty">
-                            {allocation.allocatedQuantity} {item.unit}
+                            {allocation.so_luong_phan_bo} {item.don_vi}
                           </span>
-                          {getInventoryBadge(allocation.palletCode)}
+                          {getInventoryBadge(allocation.ma_pallet)}
                         </div>
                       </div>
 
@@ -229,7 +216,9 @@ const ChecklistPallet = ({
         <div className="summary-stats">
           <div className="stat-item">
             <span className="stat-label">Tổng pallet:</span>
-            <span className="stat-value">{order.items.reduce((total, item) => total + item.allocation.length, 0)}</span>
+            <span className="stat-value">
+              {order.danh_sach_hang.reduce((total, item) => total + item.phan_bo.length, 0)}
+            </span>
           </div>
           <div className="stat-item">
             <span className="stat-label">Đã kiểm tra:</span>
@@ -262,7 +251,10 @@ const ChecklistPallet = ({
           <Truck size={16} />
           {isAllCompleted()
             ? "Hoàn thành xuất hàng"
-            : `Còn ${order.items.reduce((total, item) => total + item.allocation.length, 0) - Object.values(checkedItems).filter(Boolean).length} mục`}
+            : `Còn ${
+                order.danh_sach_hang.reduce((total, item) => total + item.phan_bo.length, 0) -
+                Object.values(checkedItems).filter(Boolean).length
+              } mục`}
         </button>
       </div>
     </div>

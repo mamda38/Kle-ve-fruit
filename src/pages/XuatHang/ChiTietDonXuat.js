@@ -1,5 +1,4 @@
 "use client"
-
 import { Package, MapPin, Calendar, AlertTriangle } from "lucide-react"
 
 const ChiTietDonXuat = ({ order, inventory, getInventoryStatus, onClose }) => {
@@ -14,17 +13,17 @@ const ChiTietDonXuat = ({ order, inventory, getInventoryStatus, onClose }) => {
   }
 
   const getTotalProgress = () => {
-    const totalAllocations = order.items.reduce((total, item) => total + item.allocation.length, 0)
-    const completedAllocations = order.items.reduce(
-      (total, item) => total + item.allocation.filter((a) => a.status === "verified").length,
+    const totalAllocations = order.danh_sach_hang.reduce((total, item) => total + item.phan_bo.length, 0)
+    const completedAllocations = order.danh_sach_hang.reduce(
+      (total, item) => total + item.phan_bo.filter((a) => a.trang_thai === "verified").length,
       0,
     )
     return Math.round((completedAllocations / totalAllocations) * 100)
   }
 
   const getItemProgress = (item) => {
-    const completedAllocations = item.allocation.filter((a) => a.status === "verified").length
-    return Math.round((completedAllocations / item.allocation.length) * 100)
+    const completedAllocations = item.phan_bo.filter((a) => a.trang_thai === "verified").length
+    return Math.round((completedAllocations / item.phan_bo.length) * 100)
   }
 
   const getAllocationStatusBadge = (status) => {
@@ -45,7 +44,7 @@ const ChiTietDonXuat = ({ order, inventory, getInventoryStatus, onClose }) => {
 
     return (
       <span className={`inventory-badge ${invStatus.status}`}>
-        {inv.available}/{inv.total} kg ({invStatus.percentage}%)
+        {inv.available}/{inv.total} thùng ({invStatus.percentage}%)
       </span>
     )
   }
@@ -55,10 +54,10 @@ const ChiTietDonXuat = ({ order, inventory, getInventoryStatus, onClose }) => {
       {/* Order Header */}
       <div className="detail-header">
         <div className="order-info">
-          <h3 className="order-code">{order.orderCode}</h3>
+          <h3 className="order-code">{order.don_hang_id}</h3>
           <div className="order-meta">
-            <span className="store-name">{order.storeName}</span>
-            <span className="store-area">• {order.storeArea}</span>
+            <span className="store-name">{order.cua_hang}</span>
+            <span className="store-area">• {order.khu_vuc}</span>
           </div>
         </div>
         <div className="order-status">
@@ -90,28 +89,36 @@ const ChiTietDonXuat = ({ order, inventory, getInventoryStatus, onClose }) => {
         </h4>
         <div className="info-grid">
           <div className="info-item">
-            <label>Ngày đặt:</label>
-            <span>{new Date(order.orderDate).toLocaleDateString("vi-VN")}</span>
+            <label>Mã cửa hàng:</label>
+            <span>{order.cua_hang_id}</span>
           </div>
           <div className="info-item">
-            <label>Ngày giao dự kiến:</label>
-            <span>{new Date(order.expectedDeliveryDate).toLocaleDateString("vi-VN")}</span>
+            <label>Ngày đặt:</label>
+            <span>{new Date(order.ngay_dat).toLocaleDateString("vi-VN")}</span>
+          </div>
+          <div className="info-item">
+            <label>Ngày xuất:</label>
+            <span>{new Date(order.ngay_xuat).toLocaleDateString("vi-VN")}</span>
           </div>
           <div className="info-item">
             <label>Ưu tiên:</label>
-            <span className={`priority-text ${order.priority}`}>
-              {order.priority === "high" ? "Cao" : order.priority === "medium" ? "Trung bình" : "Thấp"}
+            <span className={`priority-text ${order.uu_tien}`}>
+              {order.uu_tien === "high" ? "Cao" : order.uu_tien === "medium" ? "Trung bình" : "Thấp"}
             </span>
           </div>
           <div className="info-item">
             <label>Nhân viên phụ trách:</label>
-            <span>{order.assignedStaff}</span>
+            <span>{order.nhan_vien}</span>
+          </div>
+          <div className="info-item">
+            <label>Tổng thùng:</label>
+            <span>{order.tong_thung}</span>
           </div>
         </div>
-        {order.notes && (
+        {order.ghi_chu && (
           <div className="notes-section">
             <label>Ghi chú:</label>
-            <div className="notes-content">{order.notes}</div>
+            <div className="notes-content">{order.ghi_chu}</div>
           </div>
         )}
       </div>
@@ -120,17 +127,17 @@ const ChiTietDonXuat = ({ order, inventory, getInventoryStatus, onClose }) => {
       <div className="detail-section">
         <h4 className="section-title">
           <Package size={16} />
-          Danh sách sản phẩm ({order.totalItems} loại - {order.totalQuantity} kg)
+          Danh sách sản phẩm ({order.tong_san_pham} loại - {order.tong_so_luong} thùng)
         </h4>
         <div className="items-list">
-          {order.items.map((item) => (
+          {order.danh_sach_hang.map((item) => (
             <div key={item.id} className="item-card">
               <div className="item-header">
                 <div className="item-info">
-                  <span className="product-code">{item.productCode}</span>
-                  <span className="product-name">{item.productName}</span>
+                  <span className="product-code">{item.ma_san_pham}</span>
+                  <span className="product-name">{item.ten_san_pham}</span>
                   <span className="item-quantity">
-                    {item.quantity} {item.unit}
+                    {item.so_luong} {item.don_vi}
                   </span>
                 </div>
                 <div className="item-progress">
@@ -142,21 +149,21 @@ const ChiTietDonXuat = ({ order, inventory, getInventoryStatus, onClose }) => {
               </div>
 
               <div className="allocations-list">
-                {item.allocation.map((allocation, index) => (
+                {item.phan_bo.map((allocation, index) => (
                   <div key={index} className="allocation-row">
                     <div className="allocation-info">
                       <div className="pallet-info">
                         <MapPin size={14} />
-                        <span className="pallet-code">{allocation.palletCode}</span>
-                        <span className="location">{allocation.location}</span>
+                        <span className="pallet-code">{allocation.ma_pallet}</span>
+                        <span className="location">{allocation.vi_tri}</span>
                       </div>
                       <div className="allocation-quantity">
-                        {allocation.allocatedQuantity} {item.unit}
+                        {allocation.so_luong_phan_bo} {item.don_vi}
                       </div>
                     </div>
                     <div className="allocation-status">
-                      {getAllocationStatusBadge(allocation.status)}
-                      {getInventoryBadge(allocation.palletCode)}
+                      {getAllocationStatusBadge(allocation.trang_thai)}
+                      {getInventoryBadge(allocation.ma_pallet)}
                     </div>
                   </div>
                 ))}
@@ -173,17 +180,17 @@ const ChiTietDonXuat = ({ order, inventory, getInventoryStatus, onClose }) => {
           Cảnh báo tồn kho
         </h4>
         <div className="alerts-list">
-          {order.items
+          {order.danh_sach_hang
             .flatMap((item) =>
-              item.allocation
+              item.phan_bo
                 .filter((alloc) => {
-                  const invStatus = getInventoryStatus(alloc.palletCode)
+                  const invStatus = getInventoryStatus(alloc.ma_pallet)
                   return invStatus.status === "critical" || invStatus.status === "warning"
                 })
                 .map((alloc) => ({
                   ...alloc,
-                  productName: item.productName,
-                  invStatus: getInventoryStatus(alloc.palletCode),
+                  ten_san_pham: item.ten_san_pham,
+                  invStatus: getInventoryStatus(alloc.ma_pallet),
                 })),
             )
             .map((alert, index) => (
@@ -191,17 +198,17 @@ const ChiTietDonXuat = ({ order, inventory, getInventoryStatus, onClose }) => {
                 <AlertTriangle size={16} />
                 <div className="alert-content">
                   <span className="alert-title">
-                    Pallet {alert.palletCode} - {alert.productName}
+                    Pallet {alert.ma_pallet} - {alert.ten_san_pham}
                   </span>
                   <span className="alert-message">
-                    Tồn kho thấp: {inventory[alert.palletCode]?.available} kg ({alert.invStatus.percentage}%)
+                    Tồn kho thấp: {inventory[alert.ma_pallet]?.available} thùng ({alert.invStatus.percentage}%)
                   </span>
                 </div>
               </div>
             ))}
-          {order.items.every((item) =>
-            item.allocation.every((alloc) => {
-              const invStatus = getInventoryStatus(alloc.palletCode)
+          {order.danh_sach_hang.every((item) =>
+            item.phan_bo.every((alloc) => {
+              const invStatus = getInventoryStatus(alloc.ma_pallet)
               return invStatus.status === "good"
             }),
           ) && (

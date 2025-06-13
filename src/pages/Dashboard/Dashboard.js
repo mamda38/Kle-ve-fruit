@@ -36,14 +36,23 @@ const Dashboard = () => {
     },
   ]
 
-  const chartData = [
-    { name: "Táo", value: 150, color: "#00FF33" },
-    { name: "Cam", value: 200, color: "#00CC29" },
-    { name: "Chuối", value: 80, color: "#00AA22" },
-    { name: "Xoài", value: 120, color: "#008819" },
-    { name: "Nho", value: 90, color: "#006611" },
-  ]
+  // const chartData = [
+  //   { name: "Táo", value: 150, color: "#EF5350" },
+  //   { name: "Cam", value: 200, color: "	#FFA726" },
+  //   { name: "Chuối", value: 80, color: "#FFEB3B" },
+  //   { name: "Xoài", value: 120, color: "#FBC02D" },
+  //   { name: "Nho", value: 90, color: "#8E24AA" },
+  // ]
 
+  const chartData = [
+    { name: "Cam", value: 200, color: "#FFA500" },     
+    { name: "Xoài", value: 120, color: "#FBC02D" },    
+    { name: "Bơ", value: 100, color: "#4CAF50" },      
+    { name: "Nho", value: 90, color: "#8E24AA" },     
+    { name: "Táo", value: 150, color: "#EF5350" }      
+  ]
+  
+  
   const barChartData = [
     { month: "T1", quantity: 400 },
     { month: "T2", quantity: 300 },

@@ -8,33 +8,21 @@ const InQRDonHang = ({ order, onClose }) => {
   const [qrSize, setQrSize] = useState(250)
   const [includeDetails, setIncludeDetails] = useState(true)
 
-  // Tạo dữ liệu QR code cho đơn hàng hoàn chỉnh
+  // Tạo dữ liệu QR code theo định dạng JSON yêu cầu
   const qrData = {
-    type: "ORDER",
-    orderCode: order.orderCode,
-    storeId: order.storeId,
-    storeName: order.storeName,
-    storeArea: order.storeArea,
-    orderDate: order.orderDate,
-    expectedDeliveryDate: order.expectedDeliveryDate,
-    totalItems: order.totalItems,
-    totalQuantity: order.totalQuantity,
-    status: order.status,
-    priority: order.priority,
-    assignedStaff: order.assignedStaff,
-    items: order.items.map((item) => ({
-      productCode: item.productCode,
-      productName: item.productName,
-      quantity: item.quantity,
-      unit: item.unit,
-      pallets: item.allocation.map((alloc) => ({
-        palletCode: alloc.palletCode,
-        location: alloc.location,
-        quantity: alloc.allocatedQuantity,
-      })),
-    })),
-    generatedAt: new Date().toISOString(),
-    notes: order.notes,
+    don_hang_id: order?.orderCode || "",
+    cua_hang_id: order?.storeId || "",
+    ngay_xuat: order?.expectedDeliveryDate || new Date().toISOString(),
+    danh_sach_hang: order?.items
+      ? order.items.map((item) => ({
+          ma_san_pham: item.productCode || "",
+          ten_san_pham: item.productName || "",
+          so_luong: item.quantity || 0,
+          don_vi: item.unit || "thùng",
+        }))
+      : [],
+    tong_thung: order?.totalQuantity || 0,
+    ma_xac_thuc: order?.orderCode && order?.storeId ? `AUTH-${order.orderCode}-${order.storeId}` : "AUTH-UNKNOWN",
   }
 
   const qrString = JSON.stringify(qrData)
@@ -141,6 +129,14 @@ const InQRDonHang = ({ order, onClose }) => {
               font-weight: bold;
               color: #00FF33;
             }
+            .auth-code {
+              margin-top: 15px;
+              font-family: monospace;
+              font-size: 12px;
+              color: #666;
+              border-top: 1px dashed #ccc;
+              padding-top: 10px;
+            }
             @media print {
               body { margin: 0; }
               .qr-container { 
@@ -161,11 +157,12 @@ const InQRDonHang = ({ order, onClose }) => {
             ${qrSVG}
             
             <div class="order-summary">
-              <div class="summary-row"><strong>Ngày giao:</strong> ${new Date(order.expectedDeliveryDate).toLocaleDateString("vi-VN")}</div>
-              <div class="summary-row"><strong>Tổng:</strong> ${order.totalItems} loại - ${order.totalQuantity} kg</div>
+              <div class="summary-row"><strong>Mã cửa hàng:</strong> ${order.storeId}</div>
+              <div class="summary-row"><strong>Ngày xuất:</strong> ${new Date(order.expectedDeliveryDate).toLocaleDateString("vi-VN")}</div>
+              <div class="summary-row"><strong>Tổng:</strong> ${order.totalItems} loại - ${order.totalQuantity} thùng</div>
               <div class="summary-row"><strong>Nhân viên:</strong> ${order.assignedStaff}</div>
               ${
-                includeDetails
+                includeDetails && order?.items
                   ? `
                 <div class="items-list">
                   <div style="font-weight: bold; margin-bottom: 10px;">Chi tiết sản phẩm:</div>
@@ -173,8 +170,8 @@ const InQRDonHang = ({ order, onClose }) => {
                     .map(
                       (item) => `
                     <div class="item-row">
-                      <span class="product-code">${item.productCode}</span> - 
-                      ${item.productName}: ${item.quantity} ${item.unit}
+                      <span class="product-code">${item.productCode || ""}</span> - 
+                      ${item.productName || ""}: ${item.quantity || 0} ${item.unit || ""}
                     </div>
                   `,
                     )
@@ -183,6 +180,7 @@ const InQRDonHang = ({ order, onClose }) => {
               `
                   : ""
               }
+              <div class="auth-code">Mã xác thực: AUTH-${order.orderCode}-${order.storeId}</div>
             </div>
           </div>
         </body>
@@ -210,14 +208,16 @@ const InQRDonHang = ({ order, onClose }) => {
 
   const handleCopyOrderInfo = () => {
     const orderInfo = `
-Đơn hàng: ${order.orderCode}
-Cửa hàng: ${order.storeName} - ${order.storeArea}
-Ngày giao: ${new Date(order.expectedDeliveryDate).toLocaleDateString("vi-VN")}
-Tổng: ${order.totalItems} loại sản phẩm - ${order.totalQuantity} kg
-Nhân viên: ${order.assignedStaff}
+Đơn hàng: ${order?.orderCode || ""}
+Cửa hàng: ${order?.storeName || ""} (${order?.storeId || ""})
+Khu vực: ${order?.storeArea || ""}
+Ngày xuất: ${order?.expectedDeliveryDate ? new Date(order.expectedDeliveryDate).toLocaleDateString("vi-VN") : ""}
+Tổng: ${order?.totalItems || 0} loại sản phẩm - ${order?.totalQuantity || 0} thùng
+Nhân viên: ${order?.assignedStaff || ""}
+Mã xác thực: AUTH-${order?.orderCode || ""}-${order?.storeId || ""}
 
 Chi tiết sản phẩm:
-${order.items.map((item) => `- ${item.productCode} - ${item.productName}: ${item.quantity} ${item.unit}`).join("\n")}
+${order?.items ? order.items.map((item) => `- ${item.productCode || ""} - ${item.productName || ""}: ${item.quantity || 0} ${item.unit || ""}`).join("\n") : "Không có dữ liệu sản phẩm"}
     `.trim()
 
     navigator.clipboard.writeText(orderInfo)
@@ -244,13 +244,17 @@ ${order.items.map((item) => `- ${item.productCode} - ${item.productName}: ${item
 
           <div className="order-summary">
             <div className="summary-row">
-              <span className="label">Ngày giao:</span>
+              <span className="label">Mã cửa hàng:</span>
+              <span className="value">{order.storeId}</span>
+            </div>
+            <div className="summary-row">
+              <span className="label">Ngày xuất:</span>
               <span className="value">{new Date(order.expectedDeliveryDate).toLocaleDateString("vi-VN")}</span>
             </div>
             <div className="summary-row">
               <span className="label">Tổng cộng:</span>
               <span className="value">
-                {order.totalItems} loại - {order.totalQuantity} kg
+                {order.totalItems} loại - {order.totalQuantity} thùng
               </span>
             </div>
             <div className="summary-row">
@@ -261,6 +265,12 @@ ${order.items.map((item) => `- ${item.productCode} - ${item.productName}: ${item
               <span className="label">Ưu tiên:</span>
               <span className={`value priority-${order.priority}`}>
                 {order.priority === "high" ? "Cao" : order.priority === "medium" ? "Trung bình" : "Thấp"}
+              </span>
+            </div>
+            <div className="auth-code">
+              <span className="label">Mã xác thực:</span>
+              <span className="value code">
+                AUTH-{order.orderCode}-{order.storeId}
               </span>
             </div>
           </div>
@@ -282,39 +292,44 @@ ${order.items.map((item) => `- ${item.productCode} - ${item.productName}: ${item
             <span>{qrSize}px</span>
           </div>
           <div className="control-row">
-            <label className="checkbox-label">
+            {/* <label className="checkbox-label">
               <input type="checkbox" checked={includeDetails} onChange={(e) => setIncludeDetails(e.target.checked)} />
               <span>Bao gồm chi tiết sản phẩm khi in</span>
-            </label>
+            </label> */}
           </div>
         </div>
 
         <div className="control-section">
           <h4>Chi tiết sản phẩm</h4>
           <div className="items-detail">
-            {order.items.map((item) => (
-              <div key={item.id} className="item-detail">
-                <div className="item-header">
-                  <span className="product-code">{item.productCode}</span>
-                  <span className="product-name">{item.productName}</span>
-                  <span className="quantity">
-                    {item.quantity} {item.unit}
-                  </span>
+            {order?.items ? (
+              order.items.map((item) => (
+                <div key={item.id || Math.random()} className="item-detail">
+                  <div className="item-header">
+                    <span className="product-code">{item.productCode || ""}</span>
+                    <span className="product-name">{item.productName || ""}</span>
+                    <span className="quantity">
+                      {item.quantity || 0} {item.unit || ""}
+                    </span>
+                  </div>
+                  <div className="pallets-list">
+                    {item.allocation &&
+                      item.allocation.map((alloc, index) => (
+                        <div key={index} className="pallet-item">
+                          <Package size={12} />
+                          <span>{alloc.palletCode || ""}</span>
+                          <span>{alloc.location || ""}</span>
+                          <span>
+                            {alloc.allocatedQuantity || 0} {item.unit || ""}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
                 </div>
-                <div className="pallets-list">
-                  {item.allocation.map((alloc, index) => (
-                    <div key={index} className="pallet-item">
-                      <Package size={12} />
-                      <span>{alloc.palletCode}</span>
-                      <span>{alloc.location}</span>
-                      <span>
-                        {alloc.allocatedQuantity} {item.unit}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <div className="no-items">Không có dữ liệu sản phẩm</div>
+            )}
           </div>
         </div>
 

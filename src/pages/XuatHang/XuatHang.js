@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Filter, Eye, Truck, Package, CheckCircle, Clock, QrCode } from "lucide-react"
+import { Search, Filter, Eye, Truck, Package, CheckCircle, Clock, QrCode, AlertTriangle } from "lucide-react"
 import Modal from "../../components/common/Modal"
 import ChiTietDonXuat from "./ChiTietDonXuat"
 import ChecklistPallet from "./ChecklistPallet"
@@ -15,218 +15,225 @@ const XuatHang = () => {
   const [showChecklistModal, setShowChecklistModal] = useState(false)
   const [showQRModal, setShowQRModal] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
+  const [alertMessage, setAlertMessage] = useState(null)
 
   // Mock data đơn hàng chờ xuất
   const [orders, setOrders] = useState([
     {
       id: 1,
-      orderCode: "DH-2024-001",
-      storeId: 1,
-      storeName: "Siêu thị BigC Thăng Long",
-      storeArea: "Hà Nội",
-      orderDate: "2024-01-15",
-      expectedDeliveryDate: "2024-01-16",
-      status: "pending", // pending, processing, ready, completed, cancelled
-      priority: "high", // high, medium, low
-      totalItems: 3,
-      totalQuantity: 270,
-      items: [
+      don_hang_id: "XK-001",
+      cua_hang: "Siêu thị BigC Thăng Long",
+      cua_hang_id: "CH001",
+      khu_vuc: "Hà Nội",
+      ngay_dat: "2025-06-08",
+      ngay_xuat: "2025-06-09",
+      trang_thai: "pending", // pending, processing, ready, completed, cancelled
+      uu_tien: "high", // high, medium, low
+      tong_san_pham: 3,
+      tong_so_luong: 270,
+      danh_sach_hang: [
         {
           id: 1,
-          productCode: "AP001",
-          productName: "Táo Fuji",
-          quantity: 120,
-          unit: "kg",
-          allocation: [
+          ma_san_pham: "SP001",
+          ten_san_pham: "Bia Heineken",
+          so_luong: 120,
+          don_vi: "thùng",
+          phan_bo: [
             {
-              palletCode: "P-2024-001",
-              allocatedQuantity: 80,
-              location: "A-01-01",
-              status: "pending", // pending, picked, verified
+              ma_pallet: "PL-001",
+              so_luong_phan_bo: 80,
+              vi_tri: "A-01-01",
+              trang_thai: "pending", // pending, picked, verified
             },
             {
-              palletCode: "P-2024-002",
-              allocatedQuantity: 40,
-              location: "A-01-02",
-              status: "pending",
+              ma_pallet: "PL-002",
+              so_luong_phan_bo: 40,
+              vi_tri: "A-01-02",
+              trang_thai: "pending",
             },
           ],
         },
         {
           id: 2,
-          productCode: "OR001",
-          productName: "Cam Sành",
-          quantity: 100,
-          unit: "kg",
-          allocation: [
+          ma_san_pham: "SP002",
+          ten_san_pham: "Nước ngọt Coca Cola",
+          so_luong: 100,
+          don_vi: "thùng",
+          phan_bo: [
             {
-              palletCode: "P-2024-003",
-              allocatedQuantity: 100,
-              location: "B-01-01",
-              status: "pending",
+              ma_pallet: "PL-003",
+              so_luong_phan_bo: 100,
+              vi_tri: "B-01-01",
+              trang_thai: "pending",
             },
           ],
         },
         {
           id: 3,
-          productCode: "BN001",
-          productName: "Chuối Tiêu",
-          quantity: 50,
-          unit: "kg",
-          allocation: [
+          ma_san_pham: "SP003",
+          ten_san_pham: "Nước suối Lavie",
+          so_luong: 50,
+          don_vi: "thùng",
+          phan_bo: [
             {
-              palletCode: "P-2024-004",
-              allocatedQuantity: 50,
-              location: "C-01-01",
-              status: "pending",
+              ma_pallet: "PL-004",
+              so_luong_phan_bo: 50,
+              vi_tri: "C-01-01",
+              trang_thai: "pending",
             },
           ],
         },
       ],
-      notes: "Giao hàng sớm, khách hàng VIP",
-      createdDate: "2024-01-15T08:30:00",
-      assignedStaff: "Nguyễn Văn A",
+      ghi_chu: "Giao hàng sớm, khách hàng VIP",
+      ngay_tao: "2025-06-08T08:30:00",
+      nhan_vien: "Nguyễn Văn A",
+      ma_xac_thuc: "AUTH-XK001-CH001",
+      tong_thung: 270,
     },
     {
       id: 2,
-      orderCode: "DH-2024-002",
-      storeId: 2,
-      storeName: "Cửa hàng Trái cây Sạch ABC",
-      storeArea: "TP.HCM",
-      orderDate: "2024-01-15",
-      expectedDeliveryDate: "2024-01-17",
-      status: "processing",
-      priority: "medium",
-      totalItems: 2,
-      totalQuantity: 180,
-      items: [
+      don_hang_id: "XK-002",
+      cua_hang: "Cửa hàng tiện lợi Circle K",
+      cua_hang_id: "CH002",
+      khu_vuc: "TP.HCM",
+      ngay_dat: "2025-06-08",
+      ngay_xuat: "2025-06-10",
+      trang_thai: "processing",
+      uu_tien: "medium",
+      tong_san_pham: 2,
+      tong_so_luong: 180,
+      danh_sach_hang: [
         {
           id: 1,
-          productCode: "AP002",
-          productName: "Táo Gala",
-          quantity: 80,
-          unit: "kg",
-          allocation: [
+          ma_san_pham: "SP004",
+          ten_san_pham: "Bia Tiger",
+          so_luong: 80,
+          don_vi: "thùng",
+          phan_bo: [
             {
-              palletCode: "P-2024-005",
-              allocatedQuantity: 80,
-              location: "A-02-01",
-              status: "picked",
+              ma_pallet: "PL-005",
+              so_luong_phan_bo: 80,
+              vi_tri: "A-02-01",
+              trang_thai: "picked",
             },
           ],
         },
         {
           id: 2,
-          productCode: "MG001",
-          productName: "Xoài Cát",
-          quantity: 100,
-          unit: "kg",
-          allocation: [
+          ma_san_pham: "SP005",
+          ten_san_pham: "Nước ngọt Pepsi",
+          so_luong: 100,
+          don_vi: "thùng",
+          phan_bo: [
             {
-              palletCode: "P-2024-006",
-              allocatedQuantity: 100,
-              location: "D-01-01",
-              status: "verified",
+              ma_pallet: "PL-006",
+              so_luong_phan_bo: 100,
+              vi_tri: "D-01-01",
+              trang_thai: "verified",
             },
           ],
         },
       ],
-      notes: "Kiểm tra chất lượng kỹ",
-      createdDate: "2024-01-15T10:15:00",
-      assignedStaff: "Trần Thị B",
+      ghi_chu: "Kiểm tra chất lượng kỹ",
+      ngay_tao: "2025-06-08T10:15:00",
+      nhan_vien: "Trần Thị B",
+      ma_xac_thuc: "AUTH-XK002-CH002",
+      tong_thung: 180,
     },
     {
       id: 3,
-      orderCode: "DH-2024-003",
-      storeId: 3,
-      storeName: "Lotte Mart Đà Nẵng",
-      storeArea: "Đà Nẵng",
-      orderDate: "2024-01-14",
-      expectedDeliveryDate: "2024-01-16",
-      status: "ready",
-      priority: "high",
-      totalItems: 4,
-      totalQuantity: 320,
-      items: [
+      don_hang_id: "XK-003",
+      cua_hang: "Lotte Mart Đà Nẵng",
+      cua_hang_id: "CH003",
+      khu_vuc: "Đà Nẵng",
+      ngay_dat: "2025-06-07",
+      ngay_xuat: "2025-06-09",
+      trang_thai: "ready",
+      uu_tien: "high",
+      tong_san_pham: 4,
+      tong_so_luong: 320,
+      danh_sach_hang: [
         {
           id: 1,
-          productCode: "AP001",
-          productName: "Táo Fuji",
-          quantity: 100,
-          unit: "kg",
-          allocation: [
+          ma_san_pham: "SP001",
+          ten_san_pham: "Bia Heineken",
+          so_luong: 100,
+          don_vi: "thùng",
+          phan_bo: [
             {
-              palletCode: "P-2024-007",
-              allocatedQuantity: 100,
-              location: "A-01-03",
-              status: "verified",
+              ma_pallet: "PL-007",
+              so_luong_phan_bo: 100,
+              vi_tri: "A-01-03",
+              trang_thai: "verified",
             },
           ],
         },
         {
           id: 2,
-          productCode: "OR002",
-          productName: "Cam Cavendish",
-          quantity: 80,
-          unit: "kg",
-          allocation: [
+          ma_san_pham: "SP006",
+          ten_san_pham: "Nước ngọt Sprite",
+          so_luong: 80,
+          don_vi: "thùng",
+          phan_bo: [
             {
-              palletCode: "P-2024-008",
-              allocatedQuantity: 80,
-              location: "B-02-01",
-              status: "verified",
+              ma_pallet: "PL-008",
+              so_luong_phan_bo: 80,
+              vi_tri: "B-02-01",
+              trang_thai: "verified",
             },
           ],
         },
         {
           id: 3,
-          productCode: "BN002",
-          productName: "Chuối Già",
-          quantity: 60,
-          unit: "kg",
-          allocation: [
+          ma_san_pham: "SP007",
+          ten_san_pham: "Nước suối Aquafina",
+          so_luong: 60,
+          don_vi: "thùng",
+          phan_bo: [
             {
-              palletCode: "P-2024-009",
-              allocatedQuantity: 60,
-              location: "C-01-02",
-              status: "verified",
+              ma_pallet: "PL-009",
+              so_luong_phan_bo: 60,
+              vi_tri: "C-01-02",
+              trang_thai: "verified",
             },
           ],
         },
         {
           id: 4,
-          productCode: "MG002",
-          productName: "Xoài Keo",
-          quantity: 80,
-          unit: "kg",
-          allocation: [
+          ma_san_pham: "SP008",
+          ten_san_pham: "Nước tăng lực Redbull",
+          so_luong: 80,
+          don_vi: "thùng",
+          phan_bo: [
             {
-              palletCode: "P-2024-010",
-              allocatedQuantity: 80,
-              location: "D-01-02",
-              status: "verified",
+              ma_pallet: "PL-010",
+              so_luong_phan_bo: 80,
+              vi_tri: "D-01-02",
+              trang_thai: "verified",
             },
           ],
         },
       ],
-      notes: "Đơn hàng ưu tiên cao",
-      createdDate: "2024-01-14T14:20:00",
-      assignedStaff: "Lê Văn C",
+      ghi_chu: "Đơn hàng ưu tiên cao",
+      ngay_tao: "2025-06-07T14:20:00",
+      nhan_vien: "Lê Văn C",
+      ma_xac_thuc: "AUTH-XK003-CH003",
+      tong_thung: 320,
     },
   ])
 
   // Mock inventory data for real-time updates
   const [inventory, setInventory] = useState({
-    "P-2024-001": { available: 120, total: 150 },
-    "P-2024-002": { available: 150, total: 150 },
-    "P-2024-003": { available: 180, total: 200 },
-    "P-2024-004": { available: 80, total: 80 },
-    "P-2024-005": { available: 80, total: 150 },
-    "P-2024-006": { available: 100, total: 120 },
-    "P-2024-007": { available: 100, total: 150 },
-    "P-2024-008": { available: 80, total: 200 },
-    "P-2024-009": { available: 60, total: 80 },
-    "P-2024-010": { available: 80, total: 120 },
+    "PL-001": { available: 120, total: 150 },
+    "PL-002": { available: 150, total: 150 },
+    "PL-003": { available: 180, total: 200 },
+    "PL-004": { available: 80, total: 80 },
+    "PL-005": { available: 80, total: 150 },
+    "PL-006": { available: 100, total: 120 },
+    "PL-007": { available: 100, total: 150 },
+    "PL-008": { available: 80, total: 200 },
+    "PL-009": { available: 60, total: 80 },
+    "PL-010": { available: 80, total: 120 },
   })
 
   const statusOptions = [
@@ -246,10 +253,10 @@ const XuatHang = () => {
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
-      order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.storeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.storeArea.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "" || order.status === statusFilter
+      order.don_hang_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.cua_hang.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.khu_vuc.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === "" || order.trang_thai === statusFilter
     return matchesSearch && matchesStatus
   })
 
@@ -269,11 +276,19 @@ const XuatHang = () => {
             ...newInventory[randomPallet],
             available: Math.max(0, newInventory[randomPallet].available - decrease),
           }
+
+          // Show alert for low inventory
+          if (newInventory[randomPallet].available <= 20) {
+            setAlertMessage(
+              `Cảnh báo: Pallet ${randomPallet} còn ít hàng (${newInventory[randomPallet].available} thùng)`,
+            )
+            setTimeout(() => setAlertMessage(null), 5000)
+          }
         }
 
         return newInventory
       })
-    }, 10000) // Update every 10 seconds
+    }, 15000) // Update every 15 seconds
 
     return () => clearInterval(interval)
   }, [])
@@ -300,9 +315,9 @@ const XuatHang = () => {
   }
 
   const getOrderProgress = (order) => {
-    const totalAllocations = order.items.reduce((total, item) => total + item.allocation.length, 0)
-    const completedAllocations = order.items.reduce(
-      (total, item) => total + item.allocation.filter((a) => a.status === "verified").length,
+    const totalAllocations = order.danh_sach_hang.reduce((total, item) => total + item.phan_bo.length, 0)
+    const completedAllocations = order.danh_sach_hang.reduce(
+      (total, item) => total + item.phan_bo.filter((a) => a.trang_thai === "verified").length,
       0,
     )
     return Math.round((completedAllocations / totalAllocations) * 100)
@@ -324,7 +339,7 @@ const XuatHang = () => {
   }
 
   const updateOrderStatus = (orderId, newStatus) => {
-    setOrders(orders.map((order) => (order.id === orderId ? { ...order, status: newStatus } : order)))
+    setOrders(orders.map((order) => (order.id === orderId ? { ...order, trang_thai: newStatus } : order)))
   }
 
   const updateAllocationStatus = (orderId, itemId, allocationIndex, newStatus) => {
@@ -333,12 +348,12 @@ const XuatHang = () => {
         if (order.id === orderId) {
           return {
             ...order,
-            items: order.items.map((item) => {
+            danh_sach_hang: order.danh_sach_hang.map((item) => {
               if (item.id === itemId) {
                 return {
                   ...item,
-                  allocation: item.allocation.map((alloc, index) =>
-                    index === allocationIndex ? { ...alloc, status: newStatus } : alloc,
+                  phan_bo: item.phan_bo.map((alloc, index) =>
+                    index === allocationIndex ? { ...alloc, trang_thai: newStatus } : alloc,
                   ),
                 }
               }
@@ -353,15 +368,15 @@ const XuatHang = () => {
     // Update inventory when allocation is verified
     if (newStatus === "verified") {
       const order = orders.find((o) => o.id === orderId)
-      const item = order?.items.find((i) => i.id === itemId)
-      const allocation = item?.allocation[allocationIndex]
+      const item = order?.danh_sach_hang.find((i) => i.id === itemId)
+      const allocation = item?.phan_bo[allocationIndex]
 
       if (allocation) {
         setInventory((prev) => ({
           ...prev,
-          [allocation.palletCode]: {
-            ...prev[allocation.palletCode],
-            available: Math.max(0, prev[allocation.palletCode].available - allocation.allocatedQuantity),
+          [allocation.ma_pallet]: {
+            ...prev[allocation.ma_pallet],
+            available: Math.max(0, prev[allocation.ma_pallet].available - allocation.so_luong_phan_bo),
           },
         }))
       }
@@ -388,6 +403,17 @@ const XuatHang = () => {
           <p className="page-subtitle">Quản lý và xử lý các đơn hàng chờ xuất</p>
         </div>
       </div>
+
+      {/* Alert Message */}
+      {alertMessage && (
+        <div className="alert-message">
+          <AlertTriangle size={16} />
+          <span>{alertMessage}</span>
+          <button className="close-alert" onClick={() => setAlertMessage(null)}>
+            ×
+          </button>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="filters-section">
@@ -426,7 +452,7 @@ const XuatHang = () => {
             <Clock size={24} style={{ color: "#ffc107" }} />
           </div>
           <div className="stat-info">
-            <div className="stat-value">{orders.filter((o) => o.status === "pending").length}</div>
+            <div className="stat-value">{orders.filter((o) => o.trang_thai === "pending").length}</div>
             <div className="stat-label">Đơn chờ xử lý</div>
           </div>
         </div>
@@ -435,7 +461,7 @@ const XuatHang = () => {
             <Package size={24} style={{ color: "#17a2b8" }} />
           </div>
           <div className="stat-info">
-            <div className="stat-value">{orders.filter((o) => o.status === "processing").length}</div>
+            <div className="stat-value">{orders.filter((o) => o.trang_thai === "processing").length}</div>
             <div className="stat-label">Đang xử lý</div>
           </div>
         </div>
@@ -444,7 +470,7 @@ const XuatHang = () => {
             <Truck size={24} style={{ color: "#28a745" }} />
           </div>
           <div className="stat-info">
-            <div className="stat-value">{orders.filter((o) => o.status === "ready").length}</div>
+            <div className="stat-value">{orders.filter((o) => o.trang_thai === "ready").length}</div>
             <div className="stat-label">Sẵn sàng xuất</div>
           </div>
         </div>
@@ -453,7 +479,7 @@ const XuatHang = () => {
             <CheckCircle size={24} style={{ color: "#00FF33" }} />
           </div>
           <div className="stat-info">
-            <div className="stat-value">{orders.filter((o) => o.status === "completed").length}</div>
+            <div className="stat-value">{orders.filter((o) => o.trang_thai === "completed").length}</div>
             <div className="stat-label">Hoàn thành hôm nay</div>
           </div>
         </div>
@@ -472,7 +498,7 @@ const XuatHang = () => {
                 <tr>
                   <th>Mã đơn hàng</th>
                   <th>Cửa hàng</th>
-                  <th>Ngày giao</th>
+                  <th>Ngày xuất</th>
                   <th>Ưu tiên</th>
                   <th>Sản phẩm</th>
                   <th>Tiến độ</th>
@@ -486,24 +512,22 @@ const XuatHang = () => {
                   <tr key={order.id}>
                     <td>
                       <div className="order-info">
-                        <span className="order-code">{order.orderCode}</span>
-                        <span className="order-date">{new Date(order.orderDate).toLocaleDateString("vi-VN")}</span>
+                        <span className="order-code">{order.don_hang_id}</span>
+                        <span className="order-date">{new Date(order.ngay_dat).toLocaleDateString("vi-VN")}</span>
                       </div>
                     </td>
                     <td>
                       <div className="store-info">
-                        <span className="store-name">{order.storeName}</span>
-                        <span className="store-area">{order.storeArea}</span>
+                        <span className="store-name">{order.cua_hang}</span>
+                        <span className="store-area">{order.khu_vuc}</span>
                       </div>
                     </td>
-                    <td className="delivery-date">
-                      {new Date(order.expectedDeliveryDate).toLocaleDateString("vi-VN")}
-                    </td>
-                    <td>{getPriorityBadge(order.priority)}</td>
+                    <td className="delivery-date">{new Date(order.ngay_xuat).toLocaleDateString("vi-VN")}</td>
+                    <td>{getPriorityBadge(order.uu_tien)}</td>
                     <td>
                       <div className="items-summary">
-                        <span className="items-count">{order.totalItems} loại</span>
-                        <span className="total-quantity">{order.totalQuantity} kg</span>
+                        <span className="items-count">{order.tong_san_pham} loại</span>
+                        <span className="total-quantity">{order.tong_so_luong} thùng</span>
                       </div>
                     </td>
                     <td>
@@ -514,8 +538,8 @@ const XuatHang = () => {
                         <span className="progress-text">{getOrderProgress(order)}%</span>
                       </div>
                     </td>
-                    <td>{getStatusBadge(order.status)}</td>
-                    <td className="staff-cell">{order.assignedStaff}</td>
+                    <td>{getStatusBadge(order.trang_thai)}</td>
+                    <td className="staff-cell">{order.nhan_vien}</td>
                     <td>
                       <div className="action-buttons">
                         <button
@@ -529,7 +553,7 @@ const XuatHang = () => {
                           className="btn-action checklist"
                           onClick={() => handleStartChecklist(order)}
                           title="Checklist"
-                          disabled={order.status === "completed"}
+                          disabled={order.trang_thai === "completed"}
                         >
                           <CheckCircle size={14} />
                         </button>
