@@ -357,12 +357,12 @@
 }
 
 .action-secondary {
-  background: #10b981;
+  background: #10a8b9;
   color: white;
 }
 
 .action-secondary:hover {
-  background: #059669;
+  background: #059496;
 }
 
 .action-warning {
@@ -553,8 +553,8 @@
 }
 
 .stat-item.good {
-  border-color: #10b981;
-  color: #10b981;
+  border-color: #10a2b9;
+  color: #10aeb9;
 }
 
 .stat-item.warning {
@@ -807,7 +807,7 @@
 }
 
 .stat-card.completed {
-  border-color: #10b981;
+  border-color: #10b9b6;
 }
 
 .stat-card.overdue {
@@ -993,7 +993,7 @@
 }
 
 .kpi-change.up {
-  color: #10b981;
+  color: #10a8b9;
 }
 
 .kpi-change.down {
@@ -1072,12 +1072,12 @@
 }
 
 .status-good {
-  color: #10b981;
+  color: #1091b9;
   font-weight: 500;
 }
 
 .trend-up {
-  color: #10b981;
+  color: #10a5b9;
 }
 
 .trend-down {
@@ -1257,12 +1257,12 @@
 }
 
 .btn-success {
-  background: #10b981;
+  background: #10b6b9;
   color: white;
 }
 
 .btn-success:hover {
-  background: #059669;
+  background: #058096;
 }
 
 .btn-warning {
@@ -1572,7 +1572,7 @@
 }
 
 .check-icon {
-  color: #10b981;
+  color: #10b9b3;
 }
 
 .error-icon {
@@ -1610,7 +1610,7 @@
 }
 
 .quality-item {
-  border-left: 4px solid #10b981;
+  border-left: 4px solid #1091b9;
 }
 
 .quality-item.failed {
@@ -1873,7 +1873,7 @@
 }
 
 .difference-value.positive {
-  color: #10b981;
+  color: #10b9a2;
 }
 
 .difference-value.negative {

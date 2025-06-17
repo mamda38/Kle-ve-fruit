@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Plus, Search, Filter, Package, QrCode, Eye, Edit, Trash2 } from "lucide-react"
 import Modal from "../../components/common/Modal"
 import ThemPallet from "./ThemPallet"
@@ -15,82 +15,42 @@ const NhapHang = () => {
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [selectedPallet, setSelectedPallet] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [pallets, setPallets] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  // Mock data cho pallets
-  const [pallets, setPallets] = useState([
-    {
-      id: 1,
-      palletCode: "P-2024-001",
-      productCode: "AP001",
-      productName: "Táo Fuji",
-      quantity: 150,
-      unit: "kg",
-      importDate: "2024-01-15T08:30:00",
-      productionDate: "2024-01-10",
-      expiryDate: "2024-02-10",
-      qualityCheckDate: "2024-01-15",
-      location: "A-01-01",
-      supplier: "Nông trại Xanh",
-      status: "active",
-      qualityStatus: "passed",
-      notes: "Chất lượng tốt, không có khuyết tật",
-    },
-    {
-      id: 2,
-      palletCode: "P-2024-002",
-      productCode: "OR002",
-      productName: "Cam Sành",
-      quantity: 200,
-      unit: "kg",
-      importDate: "2024-01-15T09:15:00",
-      productionDate: "2024-01-12",
-      expiryDate: "2024-02-12",
-      qualityCheckDate: "2024-01-15",
-      location: "A-01-02",
-      supplier: "Vườn Trái Cây Sạch",
-      status: "active",
-      qualityStatus: "passed",
-      notes: "Cam tươi, màu sắc đẹp",
-    },
-    {
-      id: 3,
-      palletCode: "P-2024-003",
-      productCode: "BN003",
-      productName: "Chuối Tiêu",
-      quantity: 80,
-      unit: "kg",
-      importDate: "2024-01-14T10:00:00",
-      productionDate: "2024-01-08",
-      expiryDate: "2024-01-22",
-      qualityCheckDate: "2024-01-14",
-      location: "B-02-01",
-      supplier: "Hợp tác xã Nông dân",
-      status: "warning",
-      qualityStatus: "warning",
-      notes: "Sắp hết hạn, cần xuất sớm",
-    },
-  ])
+  // Danh sách trạng thái pallet
+  const trangThaiOptions = [
+    { value: 'Mới', label: 'Mới (chưa mở)', class: 'badge-success' },
+    { value: 'Đã_mở', label: 'Đã mở niêm phong', class: 'badge-warning' },
+    { value: 'Trống', label: 'Trống (không còn hàng)', class: 'badge-danger' }
+  ]
 
-  // Tạo mã pallet tự động
-  const generatePalletCode = () => {
-    const year = new Date().getFullYear()
-    const existingCodes = pallets
-      .filter((p) => p.palletCode.startsWith(`P-${year}-`))
-      .map((p) => Number.parseInt(p.palletCode.split("-")[2]))
-
-    const nextNumber = existingCodes.length > 0 ? Math.max(...existingCodes) + 1 : 1
-    return `P-${year}-${nextNumber.toString().padStart(3, "0")}`
+  // Hàm lấy danh sách pallet từ API
+  const fetchPallets = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch("http://127.0.0.1:8000/nhaphang/pallets/latest/")
+      if (!response.ok) {
+        throw new Error("Không thể lấy danh sách pallet")
+      }
+      const data = await response.json()
+      setPallets(data)
+    } catch (error) {
+      console.error("Error fetching pallets:", error)
+      setError("Không thể lấy danh sách pallet. Vui lòng thử lại sau.")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleAddPallet = (palletData) => {
-    const newPallet = {
-      id: Date.now(),
-      palletCode: generatePalletCode(),
-      ...palletData,
-      status: "active",
-      qualityStatus: "passed",
-    }
-    setPallets([...pallets, newPallet])
+  // Gọi API lấy danh sách pallet khi component được mount
+  useEffect(() => {
+    fetchPallets()
+  }, [])
+
+  const handleAddPallet = (newPallet) => {
+    setPallets(prevPallets => [newPallet, ...prevPallets])
     setShowAddModal(false)
   }
 
@@ -104,38 +64,43 @@ const NhapHang = () => {
     setShowQRModal(true)
   }
 
-  const handleDeletePallet = (palletId) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa pallet này?")) {
-      setPallets(pallets.filter((p) => p.id !== palletId))
+  const handleDeletePallet = async (maPallet) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa pallet này?")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/nhaphang/pallets/${maPallet}/`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        throw new Error("Không thể xóa pallet")
+      }
+
+      // Cập nhật lại danh sách pallet
+      setPallets(pallets.filter(p => p.ma_pallet !== maPallet))
+      alert("Xóa pallet thành công!")
+    } catch (error) {
+      console.error("Error deleting pallet:", error)
+      alert("Không thể xóa pallet. Vui lòng thử lại sau.")
     }
   }
 
   const filteredPallets = pallets.filter(
     (pallet) =>
-      pallet.palletCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pallet.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pallet.supplier.toLowerCase().includes(searchTerm.toLowerCase()),
+      pallet.ma_pallet.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pallet.ten_san_pham.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pallet.vi_tri_kho.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      active: { label: "Hoạt động", class: "badge-success" },
-      warning: { label: "Cảnh báo", class: "badge-warning" },
-      expired: { label: "Hết hạn", class: "badge-danger" },
-      inactive: { label: "Không hoạt động", class: "badge-secondary" },
-    }
-    const config = statusConfig[status] || statusConfig.active
-    return <span className={`badge ${config.class}`}>{config.label}</span>
-  }
-
-  const getQualityBadge = (qualityStatus) => {
-    const qualityConfig = {
-      passed: { label: "Đạt", class: "badge-success" },
-      warning: { label: "Cảnh báo", class: "badge-warning" },
-      failed: { label: "Không đạt", class: "badge-danger" },
-    }
-    const config = qualityConfig[qualityStatus] || qualityConfig.passed
-    return <span className={`badge ${config.class}`}>{config.label}</span>
+  const getStatusBadge = (trangThai) => {
+    const status = trangThaiOptions.find(opt => opt.value === trangThai)
+    return status ? (
+      <span className={`badge ${status.class}`}>{status.label}</span>
+    ) : (
+      <span className="badge badge-secondary">{trangThai}</span>
+    )
   }
 
   return (
@@ -177,7 +142,7 @@ const NhapHang = () => {
           <Search size={16} className="search-icon" />
           <input
             type="text"
-            placeholder="Tìm kiếm theo mã pallet, sản phẩm, nhà cung cấp..."
+            placeholder="Tìm kiếm theo mã pallet, sản phẩm, vị trí..."
             className="form-input"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -197,72 +162,89 @@ const NhapHang = () => {
             <p className="card-subtitle">Quản lý thông tin chi tiết các pallet hoa quả</p>
           </div>
           <div className="card-body">
-            <div className="table-responsive">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Mã Pallet</th>
-                    <th>Sản phẩm</th>
-                    <th>Số lượng</th>
-                    <th>Vị trí</th>
-                    <th>Ngày nhập</th>
-                    <th>Hạn sử dụng</th>
-                    <th>Trạng thái</th>
-                    <th>Chất lượng</th>
-                    <th>Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPallets.map((pallet) => (
-                    <tr key={pallet.id}>
-                      <td>
-                        <span className="pallet-code">{pallet.palletCode}</span>
-                      </td>
-                      <td>
-                        <div className="product-info">
-                          <span className="product-name">{pallet.productName}</span>
-                          <span className="product-code">({pallet.productCode})</span>
-                        </div>
-                      </td>
-                      <td className="quantity-cell">
-                        {pallet.quantity} {pallet.unit}
-                      </td>
-                      <td>
-                        <span className="location-badge">{pallet.location}</span>
-                      </td>
-                      <td className="date-cell">{new Date(pallet.importDate).toLocaleDateString("vi-VN")}</td>
-                      <td className="date-cell">{new Date(pallet.expiryDate).toLocaleDateString("vi-VN")}</td>
-                      <td>{getStatusBadge(pallet.status)}</td>
-                      <td>{getQualityBadge(pallet.qualityStatus)}</td>
-                      <td>
-                        <div className="action-buttons">
-                          <button
-                            className="btn-action view"
-                            onClick={() => handleViewDetail(pallet)}
-                            title="Xem chi tiết"
-                          >
-                            <Eye size={14} />
-                          </button>
-                          <button className="btn-action qr" onClick={() => handlePrintQR(pallet)} title="In QR Code">
-                            <QrCode size={14} />
-                          </button>
-                          <button className="btn-action edit" title="Chỉnh sửa">
-                            <Edit size={14} />
-                          </button>
-                          <button
-                            className="btn-action delete"
-                            onClick={() => handleDeletePallet(pallet.id)}
-                            title="Xóa"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
+            {loading ? (
+              <div className="loading">Đang tải danh sách pallet...</div>
+            ) : error ? (
+              <div className="error">{error}</div>
+            ) : (
+              <div className="table-responsive">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Mã Pallet</th>
+                      <th>Sản phẩm</th>
+                      <th>Số thùng</th>
+                      <th>Vị trí</th>
+                      <th>Ngày tạo</th>
+                      <th>Hạn sử dụng</th>
+                      <th>Trạng thái</th>
+                      <th>Thao tác</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {filteredPallets.map((pallet) => (
+                      <tr key={pallet.ma_pallet}>
+                        <td>
+                          <span className="pallet-code">{pallet.ma_pallet}</span>
+                        </td>
+                        <td>
+                          <div className="product-info">
+                            <span className="product-name">{pallet.ten_san_pham}</span>
+                            {pallet.loai_hang && (
+                              <span className="product-code">({pallet.loai_hang})</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="quantity-cell">
+                          {pallet.so_thung_con_lai}/{pallet.so_thung_ban_dau}
+                        </td>
+                        <td>
+                          <span className="location-badge">{pallet.vi_tri_kho}</span>
+                        </td>
+                        <td className="date-cell">
+                          {new Date(pallet.created_at).toLocaleDateString("vi-VN")}
+                        </td>
+                        <td className="date-cell">
+                          {new Date(pallet.han_su_dung).toLocaleDateString("vi-VN")}
+                        </td>
+                        <td>{getStatusBadge(pallet.trang_thai)}</td>
+                        <td>
+                          <div className="action-buttons">
+                            <button
+                              className="btn-action view"
+                              onClick={() => handleViewDetail(pallet)}
+                              title="Xem chi tiết"
+                            >
+                              <Eye size={14} />
+                            </button>
+                            <button 
+                              className="btn-action qr" 
+                              onClick={() => handlePrintQR(pallet)} 
+                              title="In QR Code"
+                            >
+                              <QrCode size={14} />
+                            </button>
+                            <button 
+                              className="btn-action edit" 
+                              title="Chỉnh sửa"
+                            >
+                              <Edit size={14} />
+                            </button>
+                            <button
+                              className="btn-action delete"
+                              onClick={() => handleDeletePallet(pallet.ma_pallet)}
+                              title="Xóa"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -272,7 +254,6 @@ const NhapHang = () => {
         <ThemPallet
           onSubmit={handleAddPallet}
           onCancel={() => setShowAddModal(false)}
-          nextPalletCode={generatePalletCode()}
         />
       </Modal>
 

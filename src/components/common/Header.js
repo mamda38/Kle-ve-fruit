@@ -15,7 +15,7 @@ const Header = () => {
         </div>
       </div>
       <div className="header-center">
-        <h1 className="system-title">Để anh Hoà đặt tên "Cháy lên anh ơi!"</h1>
+        <h1 className="system-title">Quản lý kho</h1>
       </div>
       <div className="header-left">
         {/* <button className="menu-toggle">

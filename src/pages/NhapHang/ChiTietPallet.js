@@ -1,149 +1,189 @@
 "use client"
 
-import { Calendar, Package, User, AlertTriangle, CheckCircle } from "lucide-react"
+import { useState, useEffect } from "react"
+import { X, Package, Calendar, MapPin, AlertCircle } from "lucide-react"
 
-const ChiTietPallet = ({ pallet, onClose }) => {
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    })
+function ChiTietPallet({ pallet, onClose }) {
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [palletDetails, setPalletDetails] = useState(null)
+
+  // Danh sách trạng thái pallet
+  const trangThaiOptions = [
+    { value: 'Mới', label: 'Mới (chưa mở)' },
+    { value: 'Đã_mở', label: 'Đã mở niêm phong' },
+    { value: 'Trống', label: 'Trống (không còn hàng)' }
+  ]
+
+  // Hàm lấy chi tiết pallet từ API
+  const fetchPalletDetails = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch(`http://127.0.0.1:8000/nhaphang/pallets/${pallet.ma_pallet}/`)
+      if (!response.ok) {
+        throw new Error("Không thể lấy thông tin pallet")
+      }
+      const data = await response.json()
+      setPalletDetails(data)
+    } catch (error) {
+      console.error("Error fetching pallet details:", error)
+      setError("Không thể lấy thông tin pallet. Vui lòng thử lại sau.")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const formatDateTime = (dateString) => {
-    return new Date(dateString).toLocaleString("vi-VN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  }
+  // Gọi API lấy chi tiết pallet khi component được mount
+  useEffect(() => {
+    fetchPalletDetails()
+  }, [pallet.ma_pallet])
 
-  const getDaysUntilExpiry = () => {
-    const today = new Date()
-    const expiryDate = new Date(pallet.expiryDate)
-    const diffTime = expiryDate - today
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays
-  }
-
-  const getExpiryStatus = () => {
-    const daysLeft = getDaysUntilExpiry()
-    if (daysLeft < 0) return { status: "expired", text: "Đã hết hạn", class: "danger" }
-    if (daysLeft <= 3) return { status: "critical", text: `Còn ${daysLeft} ngày`, class: "danger" }
-    if (daysLeft <= 7) return { status: "warning", text: `Còn ${daysLeft} ngày`, class: "warning" }
-    return { status: "good", text: `Còn ${daysLeft} ngày`, class: "success" }
-  }
-
-  const expiryStatus = getExpiryStatus()
-
-  return (
-    <div className="pallet-detail">
-      {/* Header */}
-      <div className="detail-header">
-        <div className="pallet-info">
-          <h3 className="pallet-code">{pallet.palletCode}</h3>
-          <div className="status-badges">
-            <span className={`badge badge-${pallet.status === "active" ? "success" : "warning"}`}>
-              {pallet.status === "active" ? "Hoạt động" : "Cảnh báo"}
-            </span>
-            <span className={`badge badge-${pallet.qualityStatus === "passed" ? "success" : "warning"}`}>
-              {pallet.qualityStatus === "passed" ? "Chất lượng đạt" : "Cần kiểm tra"}
-            </span>
-          </div>
-        </div>
-        <div className="expiry-alert">
-          <div className={`expiry-status ${expiryStatus.class}`}>
-            {expiryStatus.status === "expired" ? <AlertTriangle size={16} /> : <CheckCircle size={16} />}
-            <span>{expiryStatus.text}</span>
-          </div>
+  if (loading) {
+    return (
+      <div className="modal">
+        <div className="modal-content">
+          <div className="loading">Đang tải thông tin pallet...</div>
         </div>
       </div>
+    )
+  }
 
-      {/* Product Information */}
+  if (error) {
+    return (
+      <div className="modal">
+        <div className="modal-content">
+          <div className="error">{error}</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!palletDetails) {
+    return null
+  }
+
+  return (
+    <div className="modal">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h3>Chi tiết Pallet</h3>
+          <button className="btn btn-icon" onClick={onClose}>
+            <X size={16} />
+          </button>
+      </div>
+
+        <div className="pallet-details">
       <div className="detail-section">
         <h4 className="section-title">
           <Package size={16} />
-          Thông tin sản phẩm
+              Thông tin cơ bản
         </h4>
-        <div className="info-grid">
-          <div className="info-item">
-            <label>Mã sản phẩm:</label>
-            <span className="product-code">{pallet.productCode}</span>
+
+            <div className="detail-grid">
+              <div className="detail-item">
+                <label>Mã Pallet:</label>
+                <span>{palletDetails.ma_pallet}</span>
+              </div>
+
+              <div className="detail-item">
+                <label>Loại hàng:</label>
+                <span>{palletDetails.loai_hang || "Không có"}</span>
           </div>
-          <div className="info-item">
+
+              <div className="detail-item">
             <label>Tên sản phẩm:</label>
-            <span>{pallet.productName}</span>
+                <span>{palletDetails.ten_san_pham}</span>
+              </div>
+
+              <div className="detail-item">
+                <label>Số thùng ban đầu:</label>
+                <span>{palletDetails.so_thung_ban_dau}</span>
+              </div>
+
+              <div className="detail-item">
+                <label>Số thùng còn lại:</label>
+                <span>{palletDetails.so_thung_con_lai}</span>
           </div>
-          <div className="info-item">
-            <label>Số lượng:</label>
-            <span className="quantity">
-              {pallet.quantity} {pallet.unit}
+
+              <div className="detail-item">
+                <label>Trạng thái:</label>
+                <span className={`status-badge status-${palletDetails.trang_thai.toLowerCase()}`}>
+                  {trangThaiOptions.find(opt => opt.value === palletDetails.trang_thai)?.label || palletDetails.trang_thai}
             </span>
           </div>
-          <div className="info-item">
-            <label>Vị trí:</label>
-            <span className="location-badge">{pallet.location}</span>
-          </div>
-        </div>
+            </div>
       </div>
 
-      {/* Date Information */}
       <div className="detail-section">
         <h4 className="section-title">
           <Calendar size={16} />
           Thông tin thời gian
         </h4>
-        <div className="info-grid">
-          <div className="info-item">
-            <label>Ngày giờ nhập:</label>
-            <span>{formatDateTime(pallet.importDate)}</span>
-          </div>
-          <div className="info-item">
+
+            <div className="detail-grid">
+              <div className="detail-item">
             <label>Ngày sản xuất:</label>
-            <span>{formatDate(pallet.productionDate)}</span>
+                <span>{new Date(palletDetails.ngay_san_xuat).toLocaleDateString()}</span>
           </div>
-          <div className="info-item">
+
+              <div className="detail-item">
             <label>Hạn sử dụng:</label>
-            <span className={`expiry-date ${expiryStatus.class}`}>{formatDate(pallet.expiryDate)}</span>
+                <span>{new Date(palletDetails.han_su_dung).toLocaleDateString()}</span>
+              </div>
+
+              <div className="detail-item">
+                <label>Ngày kiểm tra CL:</label>
+                <span>{new Date(palletDetails.ngay_kiem_tra_cl).toLocaleDateString()}</span>
+              </div>
+
+              <div className="detail-item">
+                <label>Ngày tạo:</label>
+                <span>{new Date(palletDetails.created_at).toLocaleString()}</span>
           </div>
-          <div className="info-item">
-            <label>Ngày kiểm tra chất lượng:</label>
-            <span>{formatDate(pallet.qualityCheckDate)}</span>
+
+              <div className="detail-item">
+                <label>Ngày cập nhật:</label>
+                <span>{new Date(palletDetails.updated_at).toLocaleString()}</span>
           </div>
         </div>
       </div>
 
-      {/* Supplier Information */}
       <div className="detail-section">
         <h4 className="section-title">
-          <User size={16} />
-          Thông tin nhà cung cấp
+              <MapPin size={16} />
+              Vị trí kho
         </h4>
-        <div className="info-grid">
-          <div className="info-item">
-            <label>Nhà cung cấp:</label>
-            <span>{pallet.supplier}</span>
+
+            <div className="detail-grid">
+              <div className="detail-item">
+                <label>Vị trí kho:</label>
+                <span>{palletDetails.vi_tri_kho}</span>
           </div>
         </div>
       </div>
 
-      {/* Notes */}
-      {pallet.notes && (
+          {palletDetails.ghi_chu && (
         <div className="detail-section">
-          <h4 className="section-title">Ghi chú</h4>
-          <div className="notes-content">{pallet.notes}</div>
-        </div>
-      )}
+              <h4 className="section-title">
+                <AlertCircle size={16} />
+                Ghi chú
+              </h4>
 
-      {/* Actions */}
-      <div className="detail-actions">
+              <div className="detail-grid">
+                <div className="detail-item full-width">
+                  <label>Ghi chú:</label>
+                  <span>{palletDetails.ghi_chu}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="modal-footer">
         <button className="btn btn-secondary" onClick={onClose}>
           Đóng
         </button>
-        <button className="btn btn-primary">Chỉnh sửa</button>
+        </div>
       </div>
     </div>
   )

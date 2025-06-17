@@ -49,13 +49,13 @@
 }
 
 .tab-btn:hover {
-  color: #00ff33;
+  color: #219C9C;
   background-color: #f8fff9;
 }
 
 .tab-btn.active {
-  color: #00ff33;
-  border-bottom-color: #00ff33;
+  color: #219C9C;
+  border-bottom-color: #219C9C;
   background-color: #f8fff9;
 }
 
@@ -124,7 +124,7 @@
 /* Table Cell Styles */
 .pallet-code {
   font-weight: 600;
-  color: #00ff33;
+  color: #219C9C;
   font-family: monospace;
 }
 
@@ -147,17 +147,17 @@
 .quantity-cell {
   text-align: right;
   font-weight: 600;
-  color: #00ff33;
+  color: #219C9C;
 }
 
 .location-badge {
   background-color: #e6ffe9;
-  color: #00ff33;
+  color: #219C9C;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
-  border: 1px solid #00ff33;
+  border: 1px solid #219C9C;
 }
 
 .date-cell {
@@ -179,7 +179,7 @@
 
 .badge-success {
   background-color: #d4edda;
-  color: #155724;
+  color: #155757;
   border: 1px solid #c3e6cb;
 }
 
@@ -309,7 +309,7 @@
 
 .form-input:focus {
   outline: none;
-  border-color: #00ff33;
+  border-color: #219C9C;
   box-shadow: 0 0 0 3px rgba(0, 255, 51, 0.1);
 }
 
@@ -351,7 +351,7 @@
 .pallet-info h3 {
   font-size: 20px;
   font-weight: 700;
-  color: #00ff33;
+  color: #219C9C;
   margin-bottom: 8px;
 }
 
@@ -428,7 +428,7 @@
   background-color: #f8f9fa;
   padding: 12px;
   border-radius: 6px;
-  border-left: 4px solid #00ff33;
+  border-left: 4px solid #219C9C;
   font-size: 14px;
   color: #333333;
   line-height: 1.5;
@@ -455,7 +455,7 @@
 .qr-container {
   display: inline-block;
   padding: 20px;
-  border: 2px solid #00ff33;
+  border: 2px solid #219C9C;
   border-radius: 12px;
   background-color: #ffffff;
 }
@@ -471,7 +471,7 @@
 .qr-info .pallet-code {
   font-size: 16px;
   font-weight: 700;
-  color: #00ff33;
+  color: #219C9C;
   margin-bottom: 4px;
 }
 
@@ -542,12 +542,12 @@
 }
 
 .btn-primary {
-  background-color: #00ff33;
+  background-color: #219C9C;
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: #00cc29;
+  background-color: #00b4cc;
   transform: translateY(-1px);
 }
 
@@ -561,12 +561,12 @@
 }
 
 .btn-success {
-  background-color: #28a745;
+  background-color: #28a7a1;
   color: white;
 }
 
 .btn-success:hover {
-  background-color: #218838;
+  background-color: #218883;
 }
 
 .btn-info {

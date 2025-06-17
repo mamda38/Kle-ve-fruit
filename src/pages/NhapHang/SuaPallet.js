@@ -3,19 +3,19 @@
 import { useState, useEffect } from "react"
 import { Calendar, MapPin, Package } from "lucide-react"
 
-function ThemPallet({ onSubmit, onCancel }) {
-  const [pallet, setPallet] = useState({
-    ma_pallet: "", // Sẽ được tạo tự động
-    loai_hang: "", // Có thể để trống
-    ten_san_pham: "", // Bắt buộc
-    so_thung_ban_dau: "", // Số nguyên dương
-    so_thung_con_lai: "", // Sẽ bằng so_thung_ban_dau khi tạo mới
-    vi_tri_kho: "", // Mã vị trí kho
-    ngay_san_xuat: "",
-    han_su_dung: "",
-    ngay_kiem_tra_cl: new Date().toISOString().slice(0, 10),
-    trang_thai: "Mới", // Mặc định là "Mới"
-    ghi_chu: "",
+function SuaPallet({ pallet, onSubmit, onCancel }) {
+  const [formData, setFormData] = useState({
+    ma_pallet: pallet.ma_pallet,
+    loai_hang: pallet.loai_hang || "",
+    ten_san_pham: pallet.ten_san_pham,
+    so_thung_ban_dau: pallet.so_thung_ban_dau,
+    so_thung_con_lai: pallet.so_thung_con_lai,
+    vi_tri_kho: pallet.vi_tri_kho,
+    ngay_san_xuat: pallet.ngay_san_xuat,
+    han_su_dung: pallet.han_su_dung,
+    ngay_kiem_tra_cl: pallet.ngay_kiem_tra_cl,
+    trang_thai: pallet.trang_thai,
+    ghi_chu: pallet.ghi_chu || "",
   })
 
   const [errors, setErrors] = useState({})
@@ -27,33 +27,6 @@ function ThemPallet({ onSubmit, onCancel }) {
     { value: 'Đã_mở', label: 'Đã mở niêm phong' },
     { value: 'Trống', label: 'Trống (không còn hàng)' }
   ]
-
-  // Hàm lấy mã pallet tự động
-  const fetchNewPalletCode = async () => {
-    try {
-      const response = await fetch("http://127.0.0.1:8000/nhaphang/pallets/generate-code/")
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Không thể tạo mã pallet")
-      }
-      const data = await response.json()
-      if (!data.ma_pallet) {
-        throw new Error("Không nhận được mã pallet từ server")
-      }
-      setPallet(prev => ({
-        ...prev,
-        ma_pallet: data.ma_pallet
-      }))
-    } catch (error) {
-      console.error("Error fetching pallet code:", error)
-      alert(`Không thể tạo mã pallet tự động: ${error.message}`)
-    }
-  }
-
-  // Gọi API lấy mã pallet khi component được mount
-  useEffect(() => {
-    fetchNewPalletCode()
-  }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -84,7 +57,7 @@ function ThemPallet({ onSubmit, onCancel }) {
         processedValue = value
     }
 
-    setPallet(prev => ({
+    setFormData(prev => ({
       ...prev,
       [name]: processedValue
     }))
@@ -93,33 +66,41 @@ function ThemPallet({ onSubmit, onCancel }) {
   const validateForm = () => {
     const newErrors = {}
 
-    if (!pallet.ten_san_pham) {
+    if (!formData.ten_san_pham) {
       newErrors.ten_san_pham = "Vui lòng nhập tên sản phẩm"
-    } else if (pallet.ten_san_pham.length > 100) {
+    } else if (formData.ten_san_pham.length > 100) {
       newErrors.ten_san_pham = "Tên sản phẩm không được vượt quá 100 ký tự"
     }
 
-    if (!pallet.so_thung_ban_dau || pallet.so_thung_ban_dau <= 0) {
+    if (!formData.so_thung_ban_dau || formData.so_thung_ban_dau <= 0) {
       newErrors.so_thung_ban_dau = "Số thùng ban đầu phải là số nguyên dương"
     }
 
-    if (!pallet.vi_tri_kho) {
+    if (!formData.so_thung_con_lai || formData.so_thung_con_lai < 0) {
+      newErrors.so_thung_con_lai = "Số thùng còn lại không được âm"
+    }
+
+    if (formData.so_thung_con_lai > formData.so_thung_ban_dau) {
+      newErrors.so_thung_con_lai = "Số thùng còn lại không được lớn hơn số thùng ban đầu"
+    }
+
+    if (!formData.vi_tri_kho) {
       newErrors.vi_tri_kho = "Vui lòng nhập vị trí kho"
-    } else if (pallet.vi_tri_kho.length > 10) {
+    } else if (formData.vi_tri_kho.length > 10) {
       newErrors.vi_tri_kho = "Vị trí kho không được vượt quá 10 ký tự"
     }
 
-    if (!pallet.ngay_san_xuat) {
+    if (!formData.ngay_san_xuat) {
       newErrors.ngay_san_xuat = "Vui lòng nhập ngày sản xuất"
     }
 
-    if (!pallet.han_su_dung) {
+    if (!formData.han_su_dung) {
       newErrors.han_su_dung = "Vui lòng nhập hạn sử dụng"
     }
 
     // Kiểm tra logic ngày tháng
-    if (pallet.ngay_san_xuat && pallet.han_su_dung) {
-      if (new Date(pallet.ngay_san_xuat) >= new Date(pallet.han_su_dung)) {
+    if (formData.ngay_san_xuat && formData.han_su_dung) {
+      if (new Date(formData.ngay_san_xuat) >= new Date(formData.han_su_dung)) {
         newErrors.han_su_dung = "Hạn sử dụng phải sau ngày sản xuất"
       }
     }
@@ -138,15 +119,8 @@ function ThemPallet({ onSubmit, onCancel }) {
     setLoading(true)
 
     try {
-      const formData = {
-        ...pallet,
-        so_thung_ban_dau: parseInt(pallet.so_thung_ban_dau),
-        so_thung_con_lai: parseInt(pallet.so_thung_ban_dau),
-        trang_thai: "Mới",
-      }
-      
-      const response = await fetch("http://127.0.0.1:8000/nhaphang/pallets/", {
-        method: "POST",
+      const response = await fetch(`http://127.0.0.1:8000/nhaphang/pallets/${pallet.ma_pallet}/`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -157,35 +131,19 @@ function ThemPallet({ onSubmit, onCancel }) {
         const errorData = await response.json()
         console.error("API Error Response:", errorData)
         const errorMessage = errorData.detail || 
-          (typeof errorData === 'object' ? JSON.stringify(errorData) : "Có lỗi xảy ra khi tạo pallet")
+          (typeof errorData === 'object' ? JSON.stringify(errorData) : "Có lỗi xảy ra khi cập nhật pallet")
         throw new Error(errorMessage)
       }
 
       const result = await response.json()
-      alert("Tạo pallet thành công!")
+      alert("Cập nhật pallet thành công!")
       
       if (onSubmit) {
         onSubmit(result)
       }
-
-      // Reset form
-      setPallet({
-        ma_pallet: "",
-        loai_hang: "",
-        ten_san_pham: "",
-        so_thung_ban_dau: "",
-        so_thung_con_lai: "",
-        vi_tri_kho: "",
-        ngay_san_xuat: "",
-        han_su_dung: "",
-        ngay_kiem_tra_cl: new Date().toISOString().slice(0, 10),
-        trang_thai: "Mới",
-        ghi_chu: "",
-      })
-      setErrors({})
     } catch (error) {
-      console.error("Error creating pallet:", error)
-      alert(`Tạo pallet thất bại: ${error.message}`)
+      console.error("Error updating pallet:", error)
+      alert(`Cập nhật pallet thất bại: ${error.message}`)
     } finally {
       setLoading(false)
     }
@@ -206,9 +164,8 @@ function ThemPallet({ onSubmit, onCancel }) {
               type="text" 
               name="ma_pallet"
               className="form-input" 
-              value={pallet.ma_pallet} 
+              value={formData.ma_pallet} 
               disabled 
-              placeholder="Sẽ được tạo tự động"
             />
           </div>
           
@@ -218,7 +175,7 @@ function ThemPallet({ onSubmit, onCancel }) {
               type="text"
               name="loai_hang"
               className="form-input"
-              value={pallet.loai_hang}
+              value={formData.loai_hang}
               onChange={handleChange}
               placeholder="Nhập loại hàng (không bắt buộc)"
               maxLength={50}
@@ -234,7 +191,7 @@ function ThemPallet({ onSubmit, onCancel }) {
               type="text"
               name="ten_san_pham"
               className={`form-input ${errors.ten_san_pham ? "error" : ""}`}
-              value={pallet.ten_san_pham}
+              value={formData.ten_san_pham}
               onChange={handleChange}
               placeholder="Nhập tên sản phẩm"
               maxLength={100}
@@ -251,13 +208,49 @@ function ThemPallet({ onSubmit, onCancel }) {
               type="number"
               name="so_thung_ban_dau"
               className={`form-input ${errors.so_thung_ban_dau ? "error" : ""}`}
-              value={pallet.so_thung_ban_dau}
+              value={formData.so_thung_ban_dau}
               onChange={handleChange}
               placeholder="Nhập số thùng"
               min="1"
               disabled={loading}
             />
             {errors.so_thung_ban_dau && <span className="error-text">{errors.so_thung_ban_dau}</span>}
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Số thùng còn lại *</label>
+            <input
+              type="number"
+              name="so_thung_con_lai"
+              className={`form-input ${errors.so_thung_con_lai ? "error" : ""}`}
+              value={formData.so_thung_con_lai}
+              onChange={handleChange}
+              placeholder="Nhập số thùng còn lại"
+              min="0"
+              max={formData.so_thung_ban_dau}
+              disabled={loading}
+            />
+            {errors.so_thung_con_lai && <span className="error-text">{errors.so_thung_con_lai}</span>}
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Trạng thái *</label>
+            <select
+              name="trang_thai"
+              className={`form-input ${errors.trang_thai ? "error" : ""}`}
+              value={formData.trang_thai}
+              onChange={handleChange}
+              disabled={loading}
+            >
+              {trangThaiOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {errors.trang_thai && <span className="error-text">{errors.trang_thai}</span>}
           </div>
         </div>
       </div>
@@ -275,7 +268,7 @@ function ThemPallet({ onSubmit, onCancel }) {
               type="date"
               name="ngay_san_xuat"
               className={`form-input ${errors.ngay_san_xuat ? "error" : ""}`}
-              value={pallet.ngay_san_xuat}
+              value={formData.ngay_san_xuat}
               onChange={handleChange}
               disabled={loading}
             />
@@ -287,7 +280,7 @@ function ThemPallet({ onSubmit, onCancel }) {
               type="date"
               name="han_su_dung"
               className={`form-input ${errors.han_su_dung ? "error" : ""}`}
-              value={pallet.han_su_dung}
+              value={formData.han_su_dung}
               onChange={handleChange}
               disabled={loading}
             />
@@ -302,7 +295,7 @@ function ThemPallet({ onSubmit, onCancel }) {
               type="date"
               name="ngay_kiem_tra_cl"
               className="form-input"
-              value={pallet.ngay_kiem_tra_cl}
+              value={formData.ngay_kiem_tra_cl}
               onChange={handleChange}
               disabled={loading}
             />
@@ -323,7 +316,7 @@ function ThemPallet({ onSubmit, onCancel }) {
               type="text"
               name="vi_tri_kho"
               className={`form-input ${errors.vi_tri_kho ? "error" : ""}`}
-              value={pallet.vi_tri_kho}
+              value={formData.vi_tri_kho}
               onChange={handleChange}
               placeholder="Ví dụ: A1-B2"
               maxLength={10}
@@ -339,7 +332,7 @@ function ThemPallet({ onSubmit, onCancel }) {
             name="ghi_chu"
             className="form-input"
             rows="3"
-            value={pallet.ghi_chu}
+            value={formData.ghi_chu}
             onChange={handleChange}
             placeholder="Nhập ghi chú về chất lượng, tình trạng sản phẩm..."
             disabled={loading}
@@ -352,11 +345,11 @@ function ThemPallet({ onSubmit, onCancel }) {
           Hủy
         </button>
         <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? "Đang tạo..." : "Tạo Pallet"}
+          {loading ? "Đang cập nhật..." : "Cập nhật Pallet"}
         </button>
       </div>
     </form>
   )
 }
 
-export default ThemPallet
+export default SuaPallet 

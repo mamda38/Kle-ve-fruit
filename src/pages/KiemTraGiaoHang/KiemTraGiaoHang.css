@@ -33,10 +33,10 @@
     gap: 6px;
     padding: 8px 12px;
     background-color: #f8fff9;
-    border: 1px solid #00ff33;
+    border: 1px solid #219C9C;
     border-radius: 6px;
     font-size: 14px;
-    color: #00ff33;
+    color: #219C9C;
     font-weight: 500;
   }
   
@@ -63,13 +63,13 @@
   }
   
   .tab-btn:hover {
-    color: #00ff33;
+    color: #219C9C;
     background-color: #f8fff9;
   }
   
   .tab-btn.active {
-    color: #00ff33;
-    border-bottom-color: #00ff33;
+    color: #219C9C;
+    border-bottom-color: #219C9C;
     background-color: #f8fff9;
   }
   
@@ -171,7 +171,7 @@
     background-color: #f8fff9;
     padding: 20px;
     border-radius: 8px;
-    border-left: 4px solid #00ff33;
+    border-left: 4px solid #219C9C;
     margin-bottom: 20px;
   }
   
@@ -285,7 +285,7 @@
   
   .order-code {
     font-weight: 600;
-    color: #00ff33;
+    color: #219C9C;
     font-family: monospace;
   }
   
@@ -455,7 +455,7 @@
     position: absolute;
     width: 20px;
     height: 20px;
-    border: 3px solid #00ff33;
+    border: 3px solid #219C9C;
   }
   
   .corner.top-left {
@@ -492,7 +492,7 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent, #00ff33, transparent);
+    background: linear-gradient(90deg, transparent, #219C9C, transparent);
     animation: scan 2s linear infinite;
   }
   
@@ -540,7 +540,7 @@
   }
   
   .control-btn.active {
-    background-color: #00ff33;
+    background-color: #219C9C;
     color: #333333;
   }
   
@@ -562,7 +562,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #00ff33;
+    color: #219C9C;
     font-weight: 500;
   }
   
@@ -570,7 +570,7 @@
     width: 16px;
     height: 16px;
     border: 2px solid #f1f3f4;
-    border-top: 2px solid #00ff33;
+    border-top: 2px solid #219C9C;
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
@@ -707,7 +707,7 @@
     background-color: #f8f9fa;
     padding: 16px;
     border-radius: 8px;
-    border-left: 4px solid #00ff33;
+    border-left: 4px solid #219C9C;
   }
   
   .info-grid {
@@ -749,13 +749,13 @@
     padding: 12px;
     background-color: #f8f9fa;
     border-radius: 6px;
-    border-left: 3px solid #00ff33;
+    border-left: 3px solid #219C9C;
   }
   
   .product-code {
     font-family: monospace;
     font-weight: 600;
-    color: #00ff33;
+    color: #219C9C;
     background-color: #ffffff;
     padding: 4px 8px;
     border-radius: 4px;
@@ -955,7 +955,7 @@
   }
   
   .btn-primary {
-    background-color: #00ff33;
+    background-color: #219C9C;
     color: white;
   }
   
@@ -1012,7 +1012,7 @@
   
   .form-input:focus {
     outline: none;
-    border-color: #00ff33;
+    border-color: #219C9C;
     box-shadow: 0 0 0 3px rgba(0, 255, 51, 0.1);
   }
   
