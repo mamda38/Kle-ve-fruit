@@ -7,7 +7,6 @@ from .serializers import DonXuatSerializer
 
 # Create your views here.
 class DonXuatViewSet(viewsets.ViewSet):
-
     @action(detail=False, methods=['get'], url_path='don_cho_xuat')
     def get_don_xuat(self, request):
         don_cho_xuat = DonXuat.objects.filter(trang_thai='Chờ_xuất')  

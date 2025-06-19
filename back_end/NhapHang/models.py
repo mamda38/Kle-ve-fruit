@@ -6,6 +6,7 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from QuanLyKho.models import NhaCungCap, ViTriKho, SanPham
 
 class CaiDatHeThong(models.Model):
     khoa_cai_dat = models.CharField(unique=True, max_length=100)
@@ -24,8 +25,8 @@ class CaiDatHeThong(models.Model):
         db_table = 'cai_dat_he_thong'
 
 
-class LogKiemTra(models.Model):
-    don_hang_id = models.CharField(max_length=20)
+class LogKiemTraGiaoHang(models.Model):
+    don_xuat = models.ForeignKey('TaoDon.DonXuat', models.CASCADE)
     cua_hang_dich = models.CharField(max_length=100, blank=True, null=True)
     cua_hang_thuc = models.CharField(max_length=100, blank=True, null=True)
     ket_qua = models.CharField(max_length=4)
@@ -35,16 +36,15 @@ class LogKiemTra(models.Model):
     ghi_chu = models.TextField(blank=True, null=True)
 
     class Meta:
-        db_table = 'log_kiem_tra'
-
+        db_table = 'log_kiem_tra_giao_hang'
 
 class Pallets(models.Model):
     ma_pallet = models.CharField(unique=True, max_length=20)
-    loai_hang = models.CharField(max_length=50, null=True)
-    ten_san_pham = models.CharField(max_length=100)
+    san_pham = models.ForeignKey(SanPham, models.CASCADE)
+    nha_cung_cap = models.ForeignKey(NhaCungCap, models.CASCADE, null=True, blank=True)
     so_thung_ban_dau = models.IntegerField()
     so_thung_con_lai = models.IntegerField()
-    vi_tri_kho = models.CharField(max_length=10)
+    vi_tri_kho = models.ForeignKey(ViTriKho, models.CASCADE)
     ngay_san_xuat = models.DateField()
     han_su_dung = models.DateField()
     ngay_kiem_tra_cl = models.DateField()
@@ -62,5 +62,3 @@ class Pallets(models.Model):
 
     def __str__(self):
         return self.ma_pallet
-
-

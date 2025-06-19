@@ -91,7 +91,7 @@ WSGI_APPLICATION = "back_end.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'kho1',   # Tên database MySQL của bạn
+        'NAME': 'kho2',   # Tên database MySQL của bạn
         'USER': 'root',            # Tên người dùng MySQL
         'PASSWORD': 'mamda',      # Mật khẩu MySQL
         'HOST': 'localhost',       # Hoặc IP của server MySQL

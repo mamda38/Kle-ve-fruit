@@ -1,5 +1,5 @@
 from django.db import models
-from NhapHang.models import Pallets
+
 
 # Create your models here.
 class KhuVuc(models.Model):
@@ -29,7 +29,7 @@ class KhuVuc(models.Model):
 
 class ViTriKho(models.Model):
     ma_vi_tri = models.CharField(unique=True, max_length=10)
-    khu_vuc = models.ForeignKey(KhuVuc, models.CASCADE)
+    khu_vuc = models.ForeignKey('KhuVuc', models.CASCADE)
     hang = models.CharField(max_length=1)
     cot = models.IntegerField()
     loai_vi_tri = models.CharField(max_length=6, choices=[
@@ -45,7 +45,6 @@ class ViTriKho(models.Model):
         ('Bảo_trì', 'Bảo trì'),
         ('Hỏng', 'Hỏng')
     ], default='Trống')
-    pallet = models.ForeignKey(Pallets, models.CASCADE, blank=True, null=True)
     uu_tien_fifo = models.BooleanField(blank=True, null=True, default=True)
     gan_cua_ra = models.BooleanField(blank=True, null=True, default=False)
     vi_tri_cach_ly = models.BooleanField(blank=True, null=True, default=False)
@@ -130,13 +129,13 @@ class NhomHang(models.Model):
 class SanPham(models.Model):
     ma_san_pham = models.CharField(unique=True, max_length=50)
     ten_san_pham = models.CharField(max_length=100)
-    nhom_hang = models.ForeignKey(NhomHang, models.CASCADE)
+    nhom_hang = models.ForeignKey('NhomHang', models.CASCADE, null=True, blank=True)
     thuong_hieu = models.CharField(max_length=100, blank=True, null=True)
     dung_tich = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     don_vi_tinh = models.CharField(max_length=20, blank=True, null=True)
     so_luong_per_thung = models.IntegerField(blank=True, null=True)
     ma_vach = models.CharField(max_length=100, blank=True, null=True)
-    nha_cung_cap = models.CharField(max_length=100, blank=True, null=True)
+    nha_cung_cap = models.ForeignKey('NhaCungCap', models.CASCADE)
     han_su_dung_mac_dinh = models.IntegerField(blank=True, null=True)
     chu_ky_kiem_tra_cl = models.IntegerField(blank=True, null=True)
     hinh_anh = models.CharField(max_length=255, blank=True, null=True)
@@ -176,7 +175,7 @@ class NhaCungCap(models.Model):
         db_table = 'nha_cung_cap'
 
 class TinhTrangHang(models.Model):
-    pallet = models.ForeignKey(Pallets, models.CASCADE)
+    pallet = models.ForeignKey('NhapHang.Pallets', models.CASCADE)
     loai_tinh_trang = models.CharField(max_length=15, choices=[
         ('Bình_thường', 'Bình thường'),
         ('Sắp_hết_hạn', 'Sắp hết hạn'),
@@ -210,24 +209,23 @@ class TinhTrangHang(models.Model):
 
 class KiemKe(models.Model):
     ma_kiem_ke = models.CharField(unique=True, max_length=20)
-    ten_kiem_ke = models.CharField(max_length=100)
-    loai_kiem_ke = models.CharField(max_length=16, choices=[
-        ('Toàn_kho', 'Toàn kho'),
-        ('Theo_khu_vuc', 'Theo khu vực'),
-        ('Theo_nhom_hang', 'Theo nhóm hàng'),
-        ('Theo_han_su_dung', 'Theo hạn sử dụng')
+    loai_kiem_ke = models.CharField(max_length=30, choices=[
+        ('Toàn bộ', 'Toàn bộ'),
+        ('Theo khu vực', 'Theo khu vực'),
+        ('Theo nhóm hàng', 'Theo nhóm hàng'),
+        ('Đột xuất', 'Đột xuất'),
+        ('Theo HSD', 'Theo hạn sử dụng')
     ], null=False)
     pham_vi_kiem_ke = models.JSONField(blank=True, null=True)
-    ngay_kiem_ke = models.DateField()
-    nguoi_tao = models.CharField(max_length=50)
-    danh_sach_nguoi_kiem_ke = models.JSONField(blank=True, null=True)
-    trang_thai = models.CharField(max_length=12, choices=[
-        ('Chuẩn_bị', 'Chuẩn bị'),
-        ('Đang_kiểm_kê', 'Đang kiểm kê'),
-        ('Hoàn_thành', 'Hoàn thành'),
+    nguoi_tao = models.CharField(max_length=50, null=False)
+    nguoi_phu_trach = models.JSONField(blank=True, null=True)
+    trang_thai = models.CharField(max_length=14, choices=[
+        ('Chuẩn bị', 'Chuẩn bị'),
+        ('Đang thực hiện', 'Đang thực hiện'),
+        ('Hoàn thành', 'Hoàn thành'),
+        ('Tạm dừng', 'Tạm dừng'),
         ('Hủy', 'Hủy')
     ], default='Chuẩn_bị')
-    ghi_chu = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -238,17 +236,39 @@ class KiemKe(models.Model):
         return self.ma_kiem_ke
 
 class ChiTietKiemKe(models.Model):
-    kiem_ke = models.ForeignKey('KiemKe', models.CASCADE)
-    pallet = models.ForeignKey(Pallets, models.CASCADE)
-    so_luong_he_thong = models.IntegerField()
-    so_luong_thuc_te = models.IntegerField(blank=True, null=True)
-    chenh_lech = models.IntegerField(blank=True, null=True)
-    trang_thai_hang = models.CharField(max_length=100, blank=True, null=True)
+    phien_kiem_ke = models.ForeignKey('KiemKe', models.CASCADE)
+    pallet = models.ForeignKey('NhapHang.Pallets', models.CASCADE)
+    vi_tri_kho = models.ForeignKey('ViTriKho', models.CASCADE)
+    san_pham = models.ForeignKey('SanPham', models.CASCADE)
+    so_thung_he_thong = models.IntegerField()
+    han_su_dung_he_thong = models.DateField(blank=True, null=True)
+    trang_thai_he_thong = models.CharField(max_length=10, choices=[
+        ('Mới', 'Mới'),
+        ('Đã mở', 'Đã mở'),
+        ('Trống', 'Trống'),
+    ], default='Mới')
+    so_thung_thuc_te = models.IntegerField(blank=True, null=True)
+    han_su_dung_thuc_te = models.DateField(blank=True, null=True)
+    trang_thai_thuc_te = models.CharField(max_length=10, choices=[
+        ('Mới', 'Mới'),
+        ('Đã mở', 'Đã mở'),
+        ('Trống', 'Trống'),
+    ], default='Mới')
+    tinh_trang_chat_luong = models.CharField(max_length=10, choices=[
+        ('Tốt', 'Tốt'),
+        ('Khá', 'Khá'),
+        ('Trung bình', 'Trung Bình'),
+        ('Kém', 'Kém'),
+        ('Hỏng', 'Hỏng')
+    ], default='Tốt')
+    chenh_lech_so_luong = models.IntegerField(blank=True, null=True)
     nguoi_kiem_ke = models.CharField(max_length=50, blank=True, null=True)
-    thoi_gian_kiem_ke = models.DateTimeField(blank=True, null=True)
-    ghi_chu = models.TextField(blank=True, null=True)
+    thoi_gian_kiem_ke = models.DateField(blank=True, null=True)
     hinh_anh = models.JSONField(blank=True, null=True)
+    ghi_chu = models.TextField(blank=True, null=True)
+    da_xu_ly_chenh_lech = models.BooleanField(blank=True, null=True, default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'chi_tiet_kiem_ke'
